@@ -1,0 +1,7 @@
+*.exe
+*.dll
+*.vs/
+*.vscode/
+UnrealVR/obj/
+UnrealVR/bin/
+UnrealVR/.vscode/

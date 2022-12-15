@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <RootNamespace>wpf_test</RootNamespace>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <ApplicationIcon>uevr.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="UEVR.png" />
+    <None Remove="UEVR2.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="uevr.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="UEVR2.png" />
+  </ItemGroup>
+
+</Project>

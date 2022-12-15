@@ -1,0 +1,45 @@
+﻿<Window x:Class="UnrealVR.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:UnrealVR"
+        mc:Ignorable="d"
+        Title="UnrealVR"
+        Closing="MainWindow_Closing" Loaded="MainWindow_Loaded"
+        SizeToContent="WidthAndHeight" ResizeMode="NoResize" Icon="/UEVR2.png"
+        >
+    <StackPanel Background="#FF4C4646" Orientation="Vertical">
+        <Border BorderBrush="Black" BorderThickness="1">
+            <Menu x:Name="m_menu" ClipToBounds="True" HorizontalContentAlignment="Stretch">
+                <MenuItem Header="_About">
+                    <TextBlock TextWrapping="Wrap" Text="Author: praydog"/>
+                    <MenuItem Header="_Donate" Click="Donate_Clicked">
+                    </MenuItem>
+                </MenuItem>
+            </Menu>
+        </Border>
+        <StackPanel Orientation="Horizontal">
+            <GroupBox Header="Settings" Foreground="White" ClipToBounds="True">
+                <StackPanel ClipToBounds="True" HorizontalAlignment="Left">
+                    <Button Visibility="Visible" x:Name="m_openGlobalDirectoryBtn" Content="Open Global Dir" 
+                            HorizontalAlignment="Left" Click="OpenGlobalDir_Clicked" VerticalAlignment="Top"/>
+                    <Button Visibility="Collapsed" x:Name="m_openGameDirectoryBtn" Content="Open Game Dir" 
+                            HorizontalAlignment="Left" Click="OpenGameDir_Clicked">
+                    </Button>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="Inject" Foreground="White" ClipToBounds="True">
+                <StackPanel ClipToBounds="True" HorizontalAlignment="Left">
+                    <ComboBox x:Name="m_processListBox" DropDownOpened="ComboBox_DropDownOpened" SelectionChanged="ComboBox_SelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="300"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Button x:Name="m_injectButton" Content="Inject" Click="Inject_Clicked" HorizontalAlignment="Left"/>
+                        <RadioButton x:Name="m_openvrRadio" Content="OpenVR" Foreground="White"/>
+                        <RadioButton x:Name="m_openxrRadio" Content="OpenXR" Foreground="White"/>
+                    </StackPanel>
+                    <TextBlock x:Name="m_connectionStatus" TextWrapping="Wrap" Text="Unknown status"/>
+                </StackPanel>
+            </GroupBox>
+        </StackPanel>
+    </StackPanel>
+</Window>
