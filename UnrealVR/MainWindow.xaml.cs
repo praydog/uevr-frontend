@@ -260,7 +260,7 @@ namespace UnrealVR {
         }
 
         private string GenerateProcessName(Process p) {
-            return p.ProcessName + " (pid: " + p.Id + ")";
+            return p.ProcessName + " (pid: " + p.Id + ")" + " (" + p.MainWindowTitle + ")";
         }
 
         private void FillProcessList() {
@@ -273,7 +273,9 @@ namespace UnrealVR {
             // loop through the list of processes
             foreach (Process process in processList) {
                 // add the process name to the list
-                m_processList.Add(process);
+                if (process.MainWindowTitle.Length != 0) {
+                    m_processList.Add(process);
+                }
             }
 
             m_processList.Sort((a, b) => a.ProcessName.CompareTo(b.ProcessName));
