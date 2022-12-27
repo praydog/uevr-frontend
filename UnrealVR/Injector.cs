@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace UnrealVR {
     class Injector {
@@ -35,6 +36,11 @@ namespace UnrealVR {
 
             // Open the target process with the necessary access
             IntPtr processHandle = OpenProcess(0x1F0FFF, false, processId);
+
+            if (processHandle == IntPtr.Zero) {
+                MessageBox.Show("Could not open a handle to the target process.\nYou may need to start this program as an administrator, or the process may be protected.");
+                return false;
+            }
 
             // Get the address of the LoadLibrary function
             IntPtr loadLibraryAddress = GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");

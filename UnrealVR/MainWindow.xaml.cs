@@ -255,8 +255,9 @@ namespace UnrealVR {
                 runtimeName = "openvr_api.dll";
             }
 
-            Injector.InjectDll(runtimeName, process.Id);
-            Injector.InjectDll("UnrealVRBackend.dll", process.Id);
+            if (Injector.InjectDll(runtimeName, process.Id)) {
+                Injector.InjectDll("UnrealVRBackend.dll", process.Id);
+            }
         }
 
         private string GenerateProcessName(Process p) {
