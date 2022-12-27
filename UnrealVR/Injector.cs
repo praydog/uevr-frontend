@@ -45,8 +45,18 @@ namespace UnrealVR {
             // Get the address of the LoadLibrary function
             IntPtr loadLibraryAddress = GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
 
+            if (loadLibraryAddress == IntPtr.Zero) {
+                MessageBox.Show("Could not obtain LoadLibraryA address in the target process.");
+                return false;
+            }
+
             // Allocate memory in the target process for the DLL path
             IntPtr dllPathAddress = VirtualAllocEx(processHandle, IntPtr.Zero, (uint)fullPath.Length, 0x1000, 0x40);
+
+            if (dllPathAddress == IntPtr.Zero) {
+                MessageBox.Show("Failed to allocate memory in the target process.");
+                return false;
+            }
 
             // Write the DLL path to the allocated memory
             int bytesWritten = 0;
@@ -54,7 +64,12 @@ namespace UnrealVR {
             WriteProcessMemory(processHandle, dllPathAddress, bytes, (uint)fullPath.Length, out bytesWritten);
 
             // Create a remote thread in the target process that calls LoadLibrary with the DLL path
-            CreateRemoteThread(processHandle, IntPtr.Zero, 0, loadLibraryAddress, dllPathAddress, 0, IntPtr.Zero);
+            IntPtr threadHandle = CreateRemoteThread(processHandle, IntPtr.Zero, 0, loadLibraryAddress, dllPathAddress, 0, IntPtr.Zero);
+
+            if (threadHandle == IntPtr.Zero) {
+                MessageBox.Show("Failed to create remote thread in the target processs.");
+                return false;
+            }
 
             return true;
         }
