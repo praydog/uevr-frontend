@@ -23,6 +23,7 @@ using System.Windows.Markup;
 using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.IO;
+using System.Threading;
 
 namespace UnrealVR {
     public partial class MainWindow : Window {
@@ -264,26 +265,68 @@ namespace UnrealVR {
             return p.ProcessName + " (pid: " + p.Id + ")" + " (" + p.MainWindowTitle + ")";
         }
 
-        private void FillProcessList() {
-            m_processList.Clear();
-            m_processListBox.Items.Clear();
+        private SemaphoreSlim m_processSemaphore = new SemaphoreSlim(1, 1); // create a semaphore with initial count of 1 and max count of 1
 
-            // get the list of processes
-            Process[] processList = Process.GetProcesses();
-
-            // loop through the list of processes
-            foreach (Process process in processList) {
-                // add the process name to the list
-                if (process.MainWindowTitle.Length != 0) {
-                    m_processList.Add(process);
-                }
+        private async void FillProcessList() {
+            // Allow the previous running FillProcessList task to finish first
+            if (m_processSemaphore.CurrentCount == 0) {
+                return;
             }
 
-            m_processList.Sort((a, b) => a.ProcessName.CompareTo(b.ProcessName));
+            await m_processSemaphore.WaitAsync();
 
-            foreach (Process process in m_processList) {
-                string processName = GenerateProcessName(process);
-                m_processListBox.Items.Add(processName);
+            try {
+                m_processList.Clear();
+                m_processListBox.Items.Clear();
+
+                await Task.Run(() => {
+                    // get the list of processes
+                    Process[] processList = Process.GetProcesses();
+
+                    // loop through the list of processes
+                    foreach (Process process in processList) {
+                        // add the process name to the list
+                        if (process.MainWindowTitle.Length != 0) {
+                            // Only add the process if D3D11 or D3D12 is loaded
+                            bool isValid = false;
+
+                            foreach (ProcessModule module in process.Modules) {
+                                string moduleLow = module.ModuleName.ToLower();
+                                isValid = moduleLow == "d3d11.dll" || moduleLow == "d3d12.dll";
+
+                                if (isValid) {
+                                    break;
+                                }
+                            }
+
+                            if (isValid) {
+                                Application.Current.Dispatcher.Invoke(() =>
+                                {
+                                    m_processList.Add(process);
+                                    m_processList.Sort((a, b) => a.ProcessName.CompareTo(b.ProcessName));
+                                    m_processListBox.Items.Clear();
+
+                                    foreach (Process process in m_processList) {
+                                        string processName = GenerateProcessName(process);
+                                        m_processListBox.Items.Add(processName);
+                                    }
+                                });
+                            }
+                        }
+                    }
+
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        m_processListBox.Items.Clear();
+
+                        foreach (Process process in m_processList) {
+                            string processName = GenerateProcessName(process);
+                            m_processListBox.Items.Add(processName);
+                        }
+                    });
+                });
+            } finally {
+                m_processSemaphore.Release();
             }
         }
     }
