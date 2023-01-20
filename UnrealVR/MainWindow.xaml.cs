@@ -72,7 +72,7 @@ namespace UnrealVR {
                 if (verifyProcess == null || verifyProcess.HasExited || verifyProcess.ProcessName != m_lastSelectedProcessName) {
                     var processes = Process.GetProcessesByName(m_lastSelectedProcessName);
 
-                    if (processes == null || processes.Length == 0) {
+                    if (processes == null || processes.Length == 0 || !AnyInjectableProcesses(processes)) {
                         m_injectButton.Content = "Waiting for Process";
                         return;
                     }
@@ -82,7 +82,7 @@ namespace UnrealVR {
             } catch (ArgumentException) {
                 var processes = Process.GetProcessesByName(m_lastSelectedProcessName);
 
-                if (processes == null || processes.Length == 0) {
+                if (processes == null || processes.Length == 0 || !AnyInjectableProcesses(processes)) {
                     m_injectButton.Content = "Waiting for Process";
                     return;
                 }
@@ -265,6 +265,34 @@ namespace UnrealVR {
             return p.ProcessName + " (pid: " + p.Id + ")" + " (" + p.MainWindowTitle + ")";
         }
 
+        private bool IsInjectableProcess(Process process) {
+            if (process.MainWindowTitle.Length == 0) {
+                return false;
+            }
+
+            foreach (ProcessModule module in process.Modules) {
+                if (module.ModuleName == null) {
+                    continue;
+                }
+
+                string moduleLow = module.ModuleName.ToLower();
+                if (moduleLow == "d3d11.dll" || moduleLow == "d3d12.dll") {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool AnyInjectableProcesses(Process[] processList) {
+            foreach (Process process in processList) {
+                if (IsInjectableProcess(process)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
         private SemaphoreSlim m_processSemaphore = new SemaphoreSlim(1, 1); // create a semaphore with initial count of 1 and max count of 1
 
         private async void FillProcessList() {
@@ -285,33 +313,18 @@ namespace UnrealVR {
 
                     // loop through the list of processes
                     foreach (Process process in processList) {
-                        // add the process name to the list
-                        if (process.MainWindowTitle.Length != 0) {
-                            // Only add the process if D3D11 or D3D12 is loaded
-                            bool isValid = false;
+                        if (IsInjectableProcess(process)) {
+                            Application.Current.Dispatcher.Invoke(() =>
+                            {
+                                m_processList.Add(process);
+                                m_processList.Sort((a, b) => a.ProcessName.CompareTo(b.ProcessName));
+                                m_processListBox.Items.Clear();
 
-                            foreach (ProcessModule module in process.Modules) {
-                                string moduleLow = module.ModuleName.ToLower();
-                                isValid = moduleLow == "d3d11.dll" || moduleLow == "d3d12.dll";
-
-                                if (isValid) {
-                                    break;
+                                foreach (Process process in m_processList) {
+                                    string processName = GenerateProcessName(process);
+                                    m_processListBox.Items.Add(processName);
                                 }
-                            }
-
-                            if (isValid) {
-                                Application.Current.Dispatcher.Invoke(() =>
-                                {
-                                    m_processList.Add(process);
-                                    m_processList.Sort((a, b) => a.ProcessName.CompareTo(b.ProcessName));
-                                    m_processListBox.Items.Clear();
-
-                                    foreach (Process process in m_processList) {
-                                        string processName = GenerateProcessName(process);
-                                        m_processListBox.Items.Add(processName);
-                                    }
-                                });
-                            }
+                            });
                         }
                     }
 
