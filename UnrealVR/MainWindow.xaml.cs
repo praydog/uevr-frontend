@@ -265,7 +265,23 @@ namespace UnrealVR {
             return p.ProcessName + " (pid: " + p.Id + ")" + " (" + p.MainWindowTitle + ")";
         }
 
+        [DllImport("kernel32.dll", SetLastError = true, CallingConvention = CallingConvention.Winapi)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsWow64Process([In] IntPtr hProcess, [Out] out bool wow64Process);
+
         private bool IsInjectableProcess(Process process) {
+            if (Environment.Is64BitOperatingSystem) {
+                try {
+                    bool isWow64 = false;
+                    if (IsWow64Process(process.Handle, out isWow64) && isWow64) {
+                        return false;
+                    }
+                } catch {
+                    // If we threw an exception here, then the process probably can't be accessed anyways.
+                    return false;
+                }
+            }
+
             if (process.MainWindowTitle.Length == 0) {
                 return false;
             }
@@ -320,8 +336,8 @@ namespace UnrealVR {
                                 m_processList.Sort((a, b) => a.ProcessName.CompareTo(b.ProcessName));
                                 m_processListBox.Items.Clear();
 
-                                foreach (Process process in m_processList) {
-                                    string processName = GenerateProcessName(process);
+                                foreach (Process p in m_processList) {
+                                    string processName = GenerateProcessName(p);
                                     m_processListBox.Items.Add(processName);
                                 }
                             });
