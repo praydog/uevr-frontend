@@ -163,6 +163,53 @@ namespace UnrealVR {
             m_mainWindowSettings.Save();
         }
 
+        private string m_lastDisplayedWarningProcess = "";
+        private string[] m_discouragedPlugins = {
+            "OpenVR",
+            "OpenXR",
+            "Oculus"
+        };
+
+        private bool AreVRPluginsPresent_InEngineDir(string enginePath) {
+            string pluginsPath = enginePath + "\\Binaries\\ThirdParty";
+
+            if (!Directory.Exists(pluginsPath)) {
+                return false;
+            }
+
+            foreach (string discouragedPlugin in m_discouragedPlugins) {
+                string pluginPath = pluginsPath + "\\" + discouragedPlugin;
+
+                if (Directory.Exists(pluginPath)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool AreVRPluginsPresent(string gameDirectory) {
+            try {
+                var parentPath = gameDirectory;
+
+                for (int i = 0; i < 10; ++i) {
+                    parentPath = System.IO.Path.GetDirectoryName(parentPath);
+
+                    if (parentPath == null) {
+                        return false;
+                    }
+
+                    if (Directory.Exists(parentPath + "\\Engine")) {
+                        return AreVRPluginsPresent_InEngineDir(parentPath + "\\Engine");
+                    }
+                }
+            } catch (Exception ex) {
+                Console.WriteLine($"Exception caught: {ex}");
+            }
+
+            return false;
+        }
+
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             //ComboBoxItem comboBoxItem = ((sender as ComboBox).SelectedItem as ComboBoxItem);
 
@@ -179,6 +226,24 @@ namespace UnrealVR {
 
                 m_lastSelectedProcessName = p.ProcessName;
                 m_lastSelectedProcessId = p.Id;
+
+                // Search for the VR plugins inside the game directory
+                // and warn the user if they exist.
+                if (m_lastDisplayedWarningProcess != m_lastSelectedProcessName && p.MainModule != null) {
+                    m_lastDisplayedWarningProcess = m_lastSelectedProcessName;
+
+                    var gamePath = p.MainModule.FileName;
+                    
+                    if (gamePath != null) {
+                        var gameDirectory = System.IO.Path.GetDirectoryName(gamePath);
+
+                        if (gameDirectory != null) {
+                            if (AreVRPluginsPresent(gameDirectory)) {
+                                MessageBox.Show("VR plugins have been detected in the game install directory. You may want to delete or rename these as they will cause issues with the mod.");
+                            }
+                        }
+                    }
+                }
             } catch (Exception ex) {
                 Console.WriteLine($"Exception caught: {ex}");
             }
