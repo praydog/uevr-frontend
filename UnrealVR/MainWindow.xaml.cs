@@ -448,7 +448,25 @@ namespace UnrealVR {
                 }
             }
 
-            m_iniListView.ItemsSource = newList;
+            if (m_iniListView.ItemsSource == null) {
+                m_iniListView.ItemsSource = newList;
+            } else {
+                foreach (var kv in newList) {
+                    var source = (List<KeyValueComment>)m_iniListView.ItemsSource;
+
+                    var elements = source.FindAll(el => el.Key == kv.Key);
+
+                    if (elements.Count() == 0) {
+                        // Just set the entire list, we don't care.
+                        m_iniListView.ItemsSource = newList;
+                        break;
+                    } else {
+                        elements[0].Value = kv.Value;
+                        elements[0].ComboValues = kv.ComboValues;
+                    }
+                }
+            }
+
             m_iniListView.Visibility = Visibility.Visible;
         }
 
