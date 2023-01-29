@@ -37,6 +37,7 @@ namespace UnrealVR {
         public string Value { get; set; } = "";
 
         public int KeyAsInt { get { return Int32.Parse(Key); } set { Key = value.ToString(); } }
+        public bool ValueAsBool { get { return Boolean.Parse(Value); } set { Value = value.ToString().ToLower(); } }
 
         public Dictionary<string, string> ComboValues { get; set; } = new Dictionary<string, string>();
     };
@@ -84,11 +85,14 @@ namespace UnrealVR {
     public class ValueTemplateSelector : DataTemplateSelector {
         public DataTemplate ComboBoxTemplate { get; set; }
         public DataTemplate TextBoxTemplate { get; set; }
+        public DataTemplate CheckboxTemplate { get; set; }
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container) {
             var keyValuePair = (KeyValueComment)item;
             if (ComboMapping.KeyEnums.ContainsKey(keyValuePair.Key)) {
                 return ComboBoxTemplate;
+            } else if (keyValuePair.Value.Contains("true") || keyValuePair.Value.Contains("false")) {
+                return CheckboxTemplate;
             } else {
                 return TextBoxTemplate;
             }
@@ -352,6 +356,26 @@ namespace UnrealVR {
 
                 var comboBox = (ComboBox)sender;
                 var keyValuePair = (KeyValueComment)comboBox.DataContext;
+
+                bool changed = m_currentConfig[keyValuePair.Key] != keyValuePair.Value;
+                m_currentConfig[keyValuePair.Key] = keyValuePair.Value;
+
+                if (changed) {
+                    SaveCurrentConfig();
+                }
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+
+        private void CheckChanged_Value(object sender, RoutedEventArgs e) {
+            try {
+                if (m_currentConfig == null || m_currentConfigPath == null) {
+                    return;
+                }
+
+                var checkbox = (CheckBox)sender;
+                var keyValuePair = (KeyValueComment)checkbox.DataContext;
 
                 bool changed = m_currentConfig[keyValuePair.Key] != keyValuePair.Value;
                 m_currentConfig[keyValuePair.Key] = keyValuePair.Value;

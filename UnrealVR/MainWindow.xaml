@@ -50,10 +50,14 @@
                     <DataTemplate x:Key="TextBoxTemplate">
                         <TextBox Text="{Binding Value, Mode=OneWay}" Width="150" TextChanged="TextChanged_Value"/>
                     </DataTemplate>
+                    <DataTemplate x:Key="CheckBoxTemplate">
+                        <CheckBox IsChecked="{Binding ValueAsBool}" Width="150" Checked="CheckChanged_Value" Unchecked="CheckChanged_Value"/>
+                    </DataTemplate>
 
                     <local:ValueTemplateSelector x:Key="valueTemplateSelector"
                                  ComboBoxTemplate="{StaticResource ComboBoxTemplate}"
-                                 TextBoxTemplate="{StaticResource TextBoxTemplate}" />
+                                 TextBoxTemplate="{StaticResource TextBoxTemplate}"
+                                 CheckboxTemplate="{StaticResource CheckBoxTemplate}"/>
 
                 </ListView.Resources>
 
