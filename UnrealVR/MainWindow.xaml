@@ -48,7 +48,7 @@
                         <ComboBox ItemsSource="{Binding ComboValues}" SelectedValuePath="Key" DisplayMemberPath="Value" SelectedValue="{Binding Value}" SelectionChanged="ComboChanged_Value"/>
                     </DataTemplate>
                     <DataTemplate x:Key="TextBoxTemplate">
-                        <TextBox Text="{Binding Value, Mode=OneWay}" Width="150" TextChanged="TextChanged_Value"/>
+                        <TextBox Text="{Binding Value, Mode=TwoWay}" Width="150" TextChanged="TextChanged_Value"/>
                     </DataTemplate>
                     <DataTemplate x:Key="CheckBoxTemplate">
                         <CheckBox IsChecked="{Binding ValueAsBool}" Width="150" Checked="CheckChanged_Value" Unchecked="CheckChanged_Value"/>

@@ -91,7 +91,7 @@ namespace UnrealVR {
             var keyValuePair = (KeyValueComment)item;
             if (ComboMapping.KeyEnums.ContainsKey(keyValuePair.Key)) {
                 return ComboBoxTemplate;
-            } else if (keyValuePair.Value.Contains("true") || keyValuePair.Value.Contains("false")) {
+            } else if (keyValuePair.Value.ToLower().Contains("true") || keyValuePair.Value.ToLower().Contains("false")) {
                 return CheckboxTemplate;
             } else {
                 return TextBoxTemplate;
@@ -213,6 +213,12 @@ namespace UnrealVR {
             return directory;
         }
 
+        private void NavigateToDirectory(string directory) {
+            string windowsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            string explorerPath = System.IO.Path.Combine(windowsDirectory, "explorer.exe");
+            Process.Start(explorerPath, directory);
+        }
+
         private void OpenGlobalDir_Clicked(object sender, RoutedEventArgs e) {
             string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
@@ -222,9 +228,7 @@ namespace UnrealVR {
                 System.IO.Directory.CreateDirectory(directory);
             }
 
-            string windowsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            string explorerPath = System.IO.Path.Combine(windowsDirectory, "explorer.exe");
-            Process.Start(explorerPath, directory);
+            NavigateToDirectory(directory);
         }
 
         private void OpenGameDir_Clicked(object sender, RoutedEventArgs e) {
@@ -237,9 +241,7 @@ namespace UnrealVR {
                 return;
             }
 
-            string windowsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
-            string explorerPath = System.IO.Path.Combine(windowsDirectory, "explorer.exe");
-            Process.Start(explorerPath, directory);
+            NavigateToDirectory(directory);
         }
 
         private void MainWindow_Update() {
@@ -261,25 +263,25 @@ namespace UnrealVR {
             "Oculus"
         };
 
-        private bool AreVRPluginsPresent_InEngineDir(string enginePath) {
+        private string? AreVRPluginsPresent_InEngineDir(string enginePath) {
             string pluginsPath = enginePath + "\\Binaries\\ThirdParty";
 
             if (!Directory.Exists(pluginsPath)) {
-                return false;
+                return null;
             }
 
             foreach (string discouragedPlugin in m_discouragedPlugins) {
                 string pluginPath = pluginsPath + "\\" + discouragedPlugin;
 
                 if (Directory.Exists(pluginPath)) {
-                    return true;
+                    return pluginsPath;
                 }
             }
 
-            return false;
+            return null;
         }
 
-        private bool AreVRPluginsPresent(string gameDirectory) {
+        private string? AreVRPluginsPresent(string gameDirectory) {
             try {
                 var parentPath = gameDirectory;
 
@@ -287,7 +289,7 @@ namespace UnrealVR {
                     parentPath = System.IO.Path.GetDirectoryName(parentPath);
 
                     if (parentPath == null) {
-                        return false;
+                        return null;
                     }
 
                     if (Directory.Exists(parentPath + "\\Engine")) {
@@ -298,7 +300,7 @@ namespace UnrealVR {
                 Console.WriteLine($"Exception caught: {ex}");
             }
 
-            return false;
+            return null;
         }
 
         private string IniToString(IConfiguration config) {
@@ -312,20 +314,22 @@ namespace UnrealVR {
         }
 
         private void SaveCurrentConfig() {
-            if (m_currentConfig == null || m_currentConfigPath == null) {
-                return;
+            try {
+                if (m_currentConfig == null || m_currentConfigPath == null) {
+                    return;
+                }
+
+                var iniStr = IniToString(m_currentConfig);
+                Debug.Print(iniStr);
+
+                File.WriteAllText(m_currentConfigPath, iniStr);
+
+                if (m_connected) {
+                    SharedMemory.SendCommand(SharedMemory.Command.ReloadConfig);
+                }
+            } catch(Exception ex) {
+                MessageBox.Show(ex.ToString());
             }
-
-            var iniStr = IniToString(m_currentConfig);
-            Debug.Print(iniStr);
-
-            File.WriteAllText(m_currentConfigPath, iniStr);
-
-            if (m_connected) {
-                SharedMemory.SendCommand(SharedMemory.Command.ReloadConfig);
-            }
-
-            InitializeConfig_FromPath(m_currentConfigPath);
         }
 
         private void TextChanged_Value(object sender, RoutedEventArgs e) {
@@ -337,8 +341,16 @@ namespace UnrealVR {
                 var textBox = (TextBox)sender;
                 var keyValuePair = (KeyValueComment)textBox.DataContext;
 
-                bool changed = m_currentConfig[keyValuePair.Key] != textBox.Text;
-                m_currentConfig[keyValuePair.Key] = textBox.Text;
+                // For some reason the TextBox.text is updated but thne keyValuePair.Value isn't at this point.
+                bool changed = m_currentConfig[keyValuePair.Key] != textBox.Text || keyValuePair.Value != textBox.Text;
+                var newValue = textBox.Text;
+
+                if (changed) {
+                    RefreshCurrentConfig();
+                }
+
+                m_currentConfig[keyValuePair.Key] = newValue;
+                RefreshConfigUI();
 
                 if (changed) {
                     SaveCurrentConfig();
@@ -358,7 +370,14 @@ namespace UnrealVR {
                 var keyValuePair = (KeyValueComment)comboBox.DataContext;
 
                 bool changed = m_currentConfig[keyValuePair.Key] != keyValuePair.Value;
-                m_currentConfig[keyValuePair.Key] = keyValuePair.Value;
+                var newValue = keyValuePair.Value;
+
+                if (changed) {
+                    RefreshCurrentConfig();
+                }
+
+                m_currentConfig[keyValuePair.Key] = newValue;
+                RefreshConfigUI();
 
                 if (changed) {
                     SaveCurrentConfig();
@@ -378,7 +397,14 @@ namespace UnrealVR {
                 var keyValuePair = (KeyValueComment)checkbox.DataContext;
 
                 bool changed = m_currentConfig[keyValuePair.Key] != keyValuePair.Value;
-                m_currentConfig[keyValuePair.Key] = keyValuePair.Value;
+                string newValue = keyValuePair.Value;
+
+                if (changed) {
+                    RefreshCurrentConfig();
+                }
+
+                m_currentConfig[keyValuePair.Key] = newValue;
+                RefreshConfigUI();
 
                 if (changed) {
                     SaveCurrentConfig();
@@ -388,17 +414,17 @@ namespace UnrealVR {
             }
         }
 
-        private void InitializeConfig_FromPath(string configPath) {
-            var builder = new ConfigurationBuilder().AddIniFile(configPath, optional: true, reloadOnChange: true);
+        private void RefreshCurrentConfig() {
+            if (m_currentConfig == null || m_currentConfigPath == null) {
+                return;
+            }
 
-            m_currentConfig = builder.Build();
-            m_currentConfigPath = configPath;
+            InitializeConfig_FromPath(m_currentConfigPath);
+        }
 
-            foreach (var entry in MandatoryConfig.Entries) {
-                if (m_currentConfig.AsEnumerable().ToList().FindAll(v => v.Key == entry.Key).Count() == 0) {
-                    m_currentConfig[entry.Key] = entry.Value;
-                    SaveCurrentConfig();
-                }
+        private void RefreshConfigUI() {
+            if (m_currentConfig == null) {
+                return;
             }
 
             var vanillaList = m_currentConfig.AsEnumerable().ToList();
@@ -424,6 +450,22 @@ namespace UnrealVR {
 
             m_iniListView.ItemsSource = newList;
             m_iniListView.Visibility = Visibility.Visible;
+        }
+
+        private void InitializeConfig_FromPath(string configPath) {
+            var builder = new ConfigurationBuilder().AddIniFile(configPath, optional: true, reloadOnChange: false);
+
+            m_currentConfig = builder.Build();
+            m_currentConfigPath = configPath;
+
+            foreach (var entry in MandatoryConfig.Entries) {
+                if (m_currentConfig.AsEnumerable().ToList().FindAll(v => v.Key == entry.Key).Count() == 0) {
+                    m_currentConfig[entry.Key] = entry.Value;
+                    SaveCurrentConfig();
+                }
+            }
+
+            RefreshConfigUI();
         }
 
         private void InitializeConfig(string gameName) {
@@ -461,10 +503,21 @@ namespace UnrealVR {
                         var gameDirectory = System.IO.Path.GetDirectoryName(gamePath);
 
                         if (gameDirectory != null) {
-                            if (AreVRPluginsPresent(gameDirectory)) {
+                            var pluginsDir = AreVRPluginsPresent(gameDirectory);
+
+                            if (pluginsDir != null) {
                                 MessageBox.Show("VR plugins have been detected in the game install directory.\n" +
                                                 "You may want to delete or rename these as they will cause issues with the mod.\n" +
-                                                "You may also want to pass -nohmd as a command-line option to the game.");
+                                                "You may also want to pass -nohmd as a command-line option to the game. This can sometimes work without deleting anything.");
+                                var result = MessageBox.Show("Do you want to open the plugins directory now?", "Confirmation", MessageBoxButton.YesNo);
+
+                                switch (result) {
+                                    case MessageBoxResult.Yes:
+                                        NavigateToDirectory(pluginsDir);
+                                        break;
+                                    case MessageBoxResult.No:
+                                        break;
+                                };
                             }
 
                             InitializeConfig(p.ProcessName);
