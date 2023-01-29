@@ -32,9 +32,11 @@ using static UnrealVR.SharedMemory;
 using System.Threading.Channels;
 
 namespace UnrealVR {
-    class KeyValueComment {
+    class GameSettingEntry {
         public string Key { get; set; } = "";
         public string Value { get; set; } = "";
+
+        public string Tooltip { get; set; } = "";
 
         public int KeyAsInt { get { return Int32.Parse(Key); } set { Key = value.ToString(); } }
         public bool ValueAsBool { get { return Boolean.Parse(Value); } set { Value = value.ToString().ToLower(); } }
@@ -82,13 +84,30 @@ namespace UnrealVR {
         };
     };
 
+    class GameSettingTooltips {
+        public static string VR_RenderingMethod =
+        "Native Stereo: The default, most performant, and best looking rendering method (when it works). Runs through the native UE stereo pipeline. Can cause rendering bugs or crashes on some games.\n" +
+        "Synced Sequential: A form of AFR. Can fix many rendering bugs. It is fully synchronized with none of the usual AFR artifacts. Causes TAA/temporal effect ghosting.\n" +
+        "Alternating/AFR: The most basic form of AFR with all of the usual desync/artifacts. Should generally not be used unless the other two are causing issues.";
+
+        public static string VR_SyncedSequentialMethod =
+        "Requires \"Synced Sequential\" rendering to be enabled.\n" +
+        "Skip Tick: Skips the engine tick on the next frame. Usually works well but sometimes causes issues.\n" +
+        "Skip Draw: Skips the viewport draw on the next frame. Works with least issues but particle effects can play slower in some cases.\n";
+
+        public static Dictionary<string, string> Entries = new Dictionary<string, string>() {
+            { "VR_RenderingMethod", VR_RenderingMethod },
+            { "VR_SyncedSequentialMethod", VR_SyncedSequentialMethod },
+        };
+    }
+
     public class ValueTemplateSelector : DataTemplateSelector {
         public DataTemplate ComboBoxTemplate { get; set; }
         public DataTemplate TextBoxTemplate { get; set; }
         public DataTemplate CheckboxTemplate { get; set; }
 
         public override DataTemplate SelectTemplate(object item, DependencyObject container) {
-            var keyValuePair = (KeyValueComment)item;
+            var keyValuePair = (GameSettingEntry)item;
             if (ComboMapping.KeyEnums.ContainsKey(keyValuePair.Key)) {
                 return ComboBoxTemplate;
             } else if (keyValuePair.Value.ToLower().Contains("true") || keyValuePair.Value.ToLower().Contains("false")) {
@@ -339,7 +358,7 @@ namespace UnrealVR {
                 }
 
                 var textBox = (TextBox)sender;
-                var keyValuePair = (KeyValueComment)textBox.DataContext;
+                var keyValuePair = (GameSettingEntry)textBox.DataContext;
 
                 // For some reason the TextBox.text is updated but thne keyValuePair.Value isn't at this point.
                 bool changed = m_currentConfig[keyValuePair.Key] != textBox.Text || keyValuePair.Value != textBox.Text;
@@ -367,7 +386,7 @@ namespace UnrealVR {
                 }
 
                 var comboBox = (ComboBox)sender;
-                var keyValuePair = (KeyValueComment)comboBox.DataContext;
+                var keyValuePair = (GameSettingEntry)comboBox.DataContext;
 
                 bool changed = m_currentConfig[keyValuePair.Key] != keyValuePair.Value;
                 var newValue = keyValuePair.Value;
@@ -394,7 +413,7 @@ namespace UnrealVR {
                 }
 
                 var checkbox = (CheckBox)sender;
-                var keyValuePair = (KeyValueComment)checkbox.DataContext;
+                var keyValuePair = (GameSettingEntry)checkbox.DataContext;
 
                 bool changed = m_currentConfig[keyValuePair.Key] != keyValuePair.Value;
                 string newValue = keyValuePair.Value;
@@ -430,11 +449,12 @@ namespace UnrealVR {
             var vanillaList = m_currentConfig.AsEnumerable().ToList();
             vanillaList.Sort((a, b) => a.Key.CompareTo(b.Key));
 
-            List<KeyValueComment> newList = new List<KeyValueComment>();
+            List<GameSettingEntry> newList = new List<GameSettingEntry>();
 
             foreach (var kv in vanillaList) {
                 if (!string.IsNullOrEmpty(kv.Key) && !string.IsNullOrEmpty(kv.Value)) {
                     Dictionary<string, string> comboValues = new Dictionary<string, string>();
+                    string tooltip = "";
 
                     if (ComboMapping.KeyEnums.ContainsKey(kv.Key)) {
                         var valueList = ComboMapping.KeyEnums[kv.Key];
@@ -444,7 +464,11 @@ namespace UnrealVR {
                         }
                     }
 
-                    newList.Add(new KeyValueComment { Key = kv.Key, Value = kv.Value, ComboValues = comboValues });
+                    if (GameSettingTooltips.Entries.ContainsKey(kv.Key)) {
+                        tooltip = GameSettingTooltips.Entries[kv.Key];
+                    }
+
+                    newList.Add(new GameSettingEntry { Key = kv.Key, Value = kv.Value, ComboValues = comboValues, Tooltip = tooltip });
                 }
             }
 
@@ -452,7 +476,7 @@ namespace UnrealVR {
                 m_iniListView.ItemsSource = newList;
             } else {
                 foreach (var kv in newList) {
-                    var source = (List<KeyValueComment>)m_iniListView.ItemsSource;
+                    var source = (List<GameSettingEntry>)m_iniListView.ItemsSource;
 
                     var elements = source.FindAll(el => el.Key == kv.Key);
 
@@ -463,6 +487,7 @@ namespace UnrealVR {
                     } else {
                         elements[0].Value = kv.Value;
                         elements[0].ComboValues = kv.ComboValues;
+                        elements[0].Tooltip = kv.Tooltip;
                     }
                 }
             }

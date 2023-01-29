@@ -45,13 +45,17 @@
             <ListView x:Name="m_iniListView" Background="#FF4C4646" Foreground="White" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
                 <ListView.Resources>
                     <DataTemplate x:Key="ComboBoxTemplate">
-                        <ComboBox ItemsSource="{Binding ComboValues}" SelectedValuePath="Key" DisplayMemberPath="Value" SelectedValue="{Binding Value}" SelectionChanged="ComboChanged_Value"/>
+                        <ComboBox ToolTip="{Binding Tooltip}" ItemsSource="{Binding ComboValues}" SelectedValuePath="Key" DisplayMemberPath="Value" SelectedValue="{Binding Value}" SelectionChanged="ComboChanged_Value"/>
                     </DataTemplate>
                     <DataTemplate x:Key="TextBoxTemplate">
-                        <TextBox Text="{Binding Value, Mode=TwoWay}" Width="150" TextChanged="TextChanged_Value"/>
+                        <TextBox ToolTip="{Binding Tooltip}" Text="{Binding Value, Mode=TwoWay}" Width="150" TextChanged="TextChanged_Value"/>
                     </DataTemplate>
                     <DataTemplate x:Key="CheckBoxTemplate">
-                        <CheckBox IsChecked="{Binding ValueAsBool}" Width="150" Checked="CheckChanged_Value" Unchecked="CheckChanged_Value"/>
+                        <CheckBox ToolTip="{Binding Tooltip}" IsChecked="{Binding ValueAsBool}" Width="150" Checked="CheckChanged_Value" Unchecked="CheckChanged_Value"/>
+                    </DataTemplate>
+
+                    <DataTemplate x:Key="KeyTemplate">
+                        <TextBlock ToolTip="{Binding Tooltip}" Background="#FF4C4646" Text="{Binding Key}"/>
                     </DataTemplate>
 
                     <local:ValueTemplateSelector x:Key="valueTemplateSelector"
@@ -63,10 +67,8 @@
 
                 <ListView.View>
                     <GridView>
-                        <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Key}"/>
-
-                        <GridViewColumn Header="Value" Width="150" CellTemplateSelector="{StaticResource valueTemplateSelector}">
-                        </GridViewColumn>
+                        <GridViewColumn Header="Key" Width="200" CellTemplate="{StaticResource KeyTemplate}"/>
+                        <GridViewColumn Header="Value" Width="150" CellTemplateSelector="{StaticResource valueTemplateSelector}"/>
                     </GridView>
                 </ListView.View>
             </ListView>
