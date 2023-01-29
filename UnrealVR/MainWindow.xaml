@@ -9,7 +9,7 @@
         Closing="MainWindow_Closing" Loaded="MainWindow_Loaded"
         SizeToContent="WidthAndHeight" ResizeMode="NoResize" Icon="/UEVR2.png"
         >
-    <StackPanel Background="#FF4C4646" Orientation="Vertical">
+    <StackPanel x:Name="m_topStackPanel" Background="#FF4C4646" Orientation="Vertical">
         <Border BorderBrush="Black" BorderThickness="1">
             <Menu x:Name="m_menu" ClipToBounds="True" HorizontalContentAlignment="Stretch">
                 <MenuItem Header="_About">
@@ -41,5 +41,31 @@
                 </StackPanel>
             </GroupBox>
         </StackPanel>
+        <GroupBox Header="Game Settings" Foreground="White" ClipToBounds="True">
+            <ListView x:Name="m_iniListView" Background="#FF4C4646" Foreground="White" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
+                <ListView.Resources>
+                    <DataTemplate x:Key="ComboBoxTemplate">
+                        <ComboBox ItemsSource="{Binding ComboValues}" SelectedValuePath="Key" DisplayMemberPath="Value" SelectedValue="{Binding Value}" SelectionChanged="ComboChanged_Value"/>
+                    </DataTemplate>
+                    <DataTemplate x:Key="TextBoxTemplate">
+                        <TextBox Text="{Binding Value, Mode=OneWay}" Width="150" TextChanged="TextChanged_Value"/>
+                    </DataTemplate>
+
+                    <local:ValueTemplateSelector x:Key="valueTemplateSelector"
+                                 ComboBoxTemplate="{StaticResource ComboBoxTemplate}"
+                                 TextBoxTemplate="{StaticResource TextBoxTemplate}" />
+
+                </ListView.Resources>
+
+                <ListView.View>
+                    <GridView>
+                        <GridViewColumn Header="Key" Width="200" DisplayMemberBinding="{Binding Key}"/>
+
+                        <GridViewColumn Header="Value" Width="150" CellTemplateSelector="{StaticResource valueTemplateSelector}">
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </GroupBox>
     </StackPanel>
 </Window>

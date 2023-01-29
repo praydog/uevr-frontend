@@ -25,7 +25,73 @@ using System.Runtime.CompilerServices;
 using System.IO;
 using System.Threading;
 
+using Microsoft.Extensions.Configuration.Ini;
+using Microsoft.Extensions.Configuration;
+using System.ComponentModel;
+
 namespace UnrealVR {
+    class KeyValueComment {
+        public string Key { get; set; } = "";
+        public string Value { get; set; } = "";
+
+        public int KeyAsInt { get { return Int32.Parse(Key); } set { Key = value.ToString(); } }
+
+        public Dictionary<string, string> ComboValues { get; set; } = new Dictionary<string, string>();
+    };
+
+    enum RenderingMethod {
+        [Description("Native Stereo")]
+        NativeStereo = 0,
+        [Description("Synced Sequential")]
+        SyncedSequential = 1,
+        [Description("Alternating/AFR")]
+        Alternating = 2
+    };
+
+    enum SyncedSequentialMethods {
+        SkipTick = 0,
+        SkipDraw = 1,
+    };
+
+    class ComboMapping {
+
+        public static Dictionary<string, string> RenderingMethodValues = new Dictionary<string, string>(){
+            {"0", "Native Stereo" },
+            {"1", "Synced Sequential" },
+            {"2", "Alternating/AFR" }
+        };
+
+        public static Dictionary<string, string> SyncedSequentialMethodValues = new Dictionary<string, string>(){
+            {"0", "Skip Tick" },
+            {"1", "Skip Draw" },
+        };
+
+        public static Dictionary<string, Dictionary<string, string>> KeyEnums = new Dictionary<string, Dictionary<string, string>>() {
+            { "VR_RenderingMethod", RenderingMethodValues },
+            { "VR_SyncedSequentialMethod", SyncedSequentialMethodValues },
+        };
+    };
+
+    class MandatoryConfig {
+        public static Dictionary<string, string> Entries = new Dictionary<string, string>() {
+            { "VR_RenderingMethod", ((int)RenderingMethod.NativeStereo).ToString() },
+            { "VR_SyncedSequentialMethod", ((int)SyncedSequentialMethods.SkipTick).ToString() },
+        };
+    };
+
+    public class ValueTemplateSelector : DataTemplateSelector {
+        public DataTemplate ComboBoxTemplate { get; set; }
+        public DataTemplate TextBoxTemplate { get; set; }
+
+        public override DataTemplate SelectTemplate(object item, DependencyObject container) {
+            var keyValuePair = (KeyValueComment)item;
+            if (ComboMapping.KeyEnums.ContainsKey(keyValuePair.Key)) {
+                return ComboBoxTemplate;
+            } else {
+                return TextBoxTemplate;
+            }
+        }
+    }
     public partial class MainWindow : Window {
         // variables
         // process list
@@ -41,6 +107,9 @@ namespace UnrealVR {
         private DispatcherTimer m_updateTimer = new DispatcherTimer {
             Interval = new TimeSpan(0, 0, 1)
         };
+
+        private IConfiguration? m_currentConfig = null;
+        private string? m_currentConfigPath = null;
 
         public MainWindow() {
             InitializeComponent();
@@ -126,6 +195,29 @@ namespace UnrealVR {
                 }
             }
         }
+
+        private string GetGlobalDir() {
+            string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+            directory += "\\UnrealVRMod";
+
+            if (!System.IO.Directory.Exists(directory)) {
+                System.IO.Directory.CreateDirectory(directory);
+            }
+
+            return directory;
+        }
+
+        private string GetGlobalGameDir(string gameName) {
+            string directory = GetGlobalDir() + "\\" + gameName;
+
+            if (!System.IO.Directory.Exists(directory)) {
+                System.IO.Directory.CreateDirectory(directory);
+            }
+
+            return directory;
+        }
+
         private void OpenGlobalDir_Clicked(object sender, RoutedEventArgs e) {
             string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
@@ -210,6 +302,106 @@ namespace UnrealVR {
             return false;
         }
 
+        private string IniToString(IConfiguration config) {
+            string result = "";
+
+            foreach (var kv in config.AsEnumerable()) {
+                result += kv.Key + "=" + kv.Value + "\n";
+            }
+
+            return result;
+        }
+
+        private void SaveCurrentConfig() {
+            if (m_currentConfig == null || m_currentConfigPath == null) {
+                return;
+            }
+
+            var iniStr = IniToString(m_currentConfig);
+            Debug.Print(iniStr);
+
+            File.WriteAllText(m_currentConfigPath, iniStr);
+
+            InitializeConfig_FromPath(m_currentConfigPath);
+        }
+
+        private void TextChanged_Value(object sender, RoutedEventArgs e) {
+            try {
+                if (m_currentConfig == null || m_currentConfigPath == null) {
+                    return;
+                }
+
+                var textBox = (TextBox)sender;
+                var keyValuePair = (KeyValueComment)textBox.DataContext;
+                m_currentConfig[keyValuePair.Key] = textBox.Text;
+
+                SaveCurrentConfig();
+            } catch(Exception ex) { 
+                Console.WriteLine(ex.ToString()); 
+            }
+        }
+
+        private void ComboChanged_Value(object sender, RoutedEventArgs e) {
+            try {
+                if (m_currentConfig == null || m_currentConfigPath == null) {
+                    return;
+                }
+
+                var comboBox = (ComboBox)sender;
+                var keyValuePair = (KeyValueComment)comboBox.DataContext;
+                m_currentConfig[keyValuePair.Key] = keyValuePair.Value;
+
+                SaveCurrentConfig();
+            } catch (Exception ex) {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+
+        private void InitializeConfig_FromPath(string configPath) {
+            var builder = new ConfigurationBuilder().AddIniFile(configPath, optional: true, reloadOnChange: true);
+
+            m_currentConfig = builder.Build();
+            m_currentConfigPath = configPath;
+
+            foreach (var entry in MandatoryConfig.Entries) {
+                if (m_currentConfig.AsEnumerable().ToList().FindAll(v => v.Key == entry.Key).Count() == 0) {
+                    m_currentConfig[entry.Key] = entry.Value;
+                    SaveCurrentConfig();
+                }
+            }
+
+            var vanillaList = m_currentConfig.AsEnumerable().ToList();
+            vanillaList.Sort((a, b) => a.Key.CompareTo(b.Key));
+
+            List<KeyValueComment> newList = new List<KeyValueComment>();
+
+            foreach (var kv in vanillaList) {
+                if (!string.IsNullOrEmpty(kv.Key) && !string.IsNullOrEmpty(kv.Value)) {
+                    Dictionary<string, string> comboValues = new Dictionary<string, string>();
+
+                    if (ComboMapping.KeyEnums.ContainsKey(kv.Key)) {
+                        var valueList = ComboMapping.KeyEnums[kv.Key];
+
+                        if (valueList != null && valueList.ContainsKey(kv.Value)) {
+                            comboValues = valueList;
+                        }
+                    }
+
+                    newList.Add(new KeyValueComment { Key = kv.Key, Value = kv.Value, ComboValues = comboValues });
+                }
+            }
+
+            m_iniListView.ItemsSource = newList;
+            m_iniListView.Visibility = Visibility.Visible;
+        }
+
+        private void InitializeConfig(string gameName) {
+            var configDir = GetGlobalGameDir(gameName);
+            var configPath = configDir + "\\config.txt";
+
+            InitializeConfig_FromPath(configPath);
+        }
+
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             //ComboBoxItem comboBoxItem = ((sender as ComboBox).SelectedItem as ComboBoxItem);
 
@@ -239,8 +431,12 @@ namespace UnrealVR {
 
                         if (gameDirectory != null) {
                             if (AreVRPluginsPresent(gameDirectory)) {
-                                MessageBox.Show("VR plugins have been detected in the game install directory. You may want to delete or rename these as they will cause issues with the mod.");
+                                MessageBox.Show("VR plugins have been detected in the game install directory.\n" +
+                                                "You may want to delete or rename these as they will cause issues with the mod.\n" +
+                                                "You may also want to pass -nohmd as a command-line option to the game.");
                             }
+
+                            InitializeConfig(p.ProcessName);
                         }
                     }
                 }
