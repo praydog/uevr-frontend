@@ -28,6 +28,8 @@ using System.Threading;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel;
+using static UnrealVR.SharedMemory;
+using System.Threading.Channels;
 
 namespace UnrealVR {
     class KeyValueComment {
@@ -101,7 +103,7 @@ namespace UnrealVR {
         private string m_lastSelectedProcessName = new string("");
         private int m_lastSelectedProcessId = 0;
 
-        private UnrealVRSharedMemory.Data m_lastSharedData;
+        private SharedMemory.Data? m_lastSharedData = null;
         private bool m_connected = false;
 
         private DispatcherTimer m_updateTimer = new DispatcherTimer {
@@ -169,30 +171,19 @@ namespace UnrealVR {
         }
 
         private void Update_InjectorConnectionStatus() {
-            using (var mapping = UnrealVRSharedMemory.GetMapping()) {
-                if (mapping != null) {
-                    m_connectionStatus.Text = UnrealVRConnectionStatus.Connected;
+            var data = SharedMemory.GetData();
 
-                    // Map the MemoryMappedFile to a pointer
-                    using (var accessor = mapping.CreateViewAccessor()) {
-                        byte[] rawData = new byte[Marshal.SizeOf(typeof(UnrealVRSharedMemory.Data))];
-                        accessor.ReadArray(0, rawData, 0, rawData.Length);
-
-                        var pinned = GCHandle.Alloc(rawData, GCHandleType.Pinned);
-                        var data = Marshal.PtrToStructure<UnrealVRSharedMemory.Data>(pinned.AddrOfPinnedObject());
-
-                        m_connectionStatus.Text += ": " + data.path;
-                        m_lastSharedData = data;
-                        m_connected = true;
-
-                        pinned.Free();
-                        Show_ConnectionOptions();
-                    }
-                } else {
-                    m_connectionStatus.Text = UnrealVRConnectionStatus.NoInstanceDetected;
-                    m_connected = false;
-                    Hide_ConnectionOptions();
-                }
+            if (data != null) {
+                m_connectionStatus.Text = UnrealVRConnectionStatus.Connected;
+                m_connectionStatus.Text += ": " + data?.path;
+                m_connectionStatus.Text += "\nThread ID: " + data?.mainThreadId.ToString();
+                m_lastSharedData = data;
+                m_connected = true;
+                Show_ConnectionOptions();
+            } else {
+                m_connectionStatus.Text = UnrealVRConnectionStatus.NoInstanceDetected;
+                m_connected = false;
+                Hide_ConnectionOptions();
             }
         }
 
@@ -233,7 +224,11 @@ namespace UnrealVR {
         }
 
         private void OpenGameDir_Clicked(object sender, RoutedEventArgs e) {
-            var directory = System.IO.Path.GetDirectoryName(m_lastSharedData.path);
+            if (m_lastSharedData == null) {
+                return;
+            }
+
+            var directory = System.IO.Path.GetDirectoryName(m_lastSharedData?.path);
             if (directory == null) {
                 return;
             }
@@ -322,6 +317,10 @@ namespace UnrealVR {
 
             File.WriteAllText(m_currentConfigPath, iniStr);
 
+            if (m_connected) {
+                SharedMemory.SendCommand(SharedMemory.Command.ReloadConfig);
+            }
+
             InitializeConfig_FromPath(m_currentConfigPath);
         }
 
@@ -333,9 +332,13 @@ namespace UnrealVR {
 
                 var textBox = (TextBox)sender;
                 var keyValuePair = (KeyValueComment)textBox.DataContext;
+
+                bool changed = m_currentConfig[keyValuePair.Key] != textBox.Text;
                 m_currentConfig[keyValuePair.Key] = textBox.Text;
 
-                SaveCurrentConfig();
+                if (changed) {
+                    SaveCurrentConfig();
+                }
             } catch(Exception ex) { 
                 Console.WriteLine(ex.ToString()); 
             }
@@ -349,9 +352,13 @@ namespace UnrealVR {
 
                 var comboBox = (ComboBox)sender;
                 var keyValuePair = (KeyValueComment)comboBox.DataContext;
+
+                bool changed = m_currentConfig[keyValuePair.Key] != keyValuePair.Value;
                 m_currentConfig[keyValuePair.Key] = keyValuePair.Value;
 
-                SaveCurrentConfig();
+                if (changed) {
+                    SaveCurrentConfig();
+                }
             } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
             }
@@ -461,8 +468,12 @@ namespace UnrealVR {
             // "Terminate Connected Process"
             if (m_connected) {
                 try {
-                    var target = Process.GetProcessById(m_lastSharedData.pid);
-                    target.CloseMainWindow();
+                    var pid = m_lastSharedData?.pid;
+
+                    if (pid != null) {
+                        var target = Process.GetProcessById((int)pid);
+                        target.CloseMainWindow();
+                    }
                 } catch(Exception) {
 
                 }
