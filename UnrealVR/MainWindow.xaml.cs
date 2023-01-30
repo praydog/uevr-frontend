@@ -563,6 +563,7 @@ namespace UnrealVR {
                                 };
                             }
 
+                            m_iniListView.ItemsSource = null; // Because we are switching processes.
                             InitializeConfig(p.ProcessName);
                         }
                     }
