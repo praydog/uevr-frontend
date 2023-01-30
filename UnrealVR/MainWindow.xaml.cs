@@ -624,11 +624,17 @@ namespace UnrealVR {
                 if (verifyProcess == null || verifyProcess.HasExited || verifyProcess.ProcessName != m_lastSelectedProcessName) {
                     var processes = Process.GetProcessesByName(m_lastSelectedProcessName);
 
-                    if (processes == null || processes.Length == 0) {
+                    if (processes == null || processes.Length == 0 || !AnyInjectableProcesses(processes)) {
                         return;
                     }
 
-                    process = processes[0];
+                    foreach (var candidate in processes) {
+                        if (IsInjectableProcess(candidate)) {
+                            process = candidate;
+                            break;
+                        }
+                    }
+
                     m_processList[index] = process;
                     m_processListBox.Items[index] = GenerateProcessName(process);
                     m_processListBox.SelectedIndex = index;
