@@ -80,7 +80,7 @@ namespace UnrealVR {
     class MandatoryConfig {
         public static Dictionary<string, string> Entries = new Dictionary<string, string>() {
             { "VR_RenderingMethod", ((int)RenderingMethod.NativeStereo).ToString() },
-            { "VR_SyncedSequentialMethod", ((int)SyncedSequentialMethods.SkipTick).ToString() },
+            { "VR_SyncedSequentialMethod", ((int)SyncedSequentialMethods.SkipDraw).ToString() },
         };
     };
 
