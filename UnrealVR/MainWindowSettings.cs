@@ -20,5 +20,12 @@ namespace UnrealVR {
             get { return (bool)this["OpenVRRadio"]; }
             set { this["OpenVRRadio"] = value; }
         }
+
+        [UserScopedSettingAttribute()]
+        [DefaultSettingValueAttribute("true")]
+        public bool NullifyVRPluginsCheckbox {
+            get { return (bool)this["NullifyVRPluginsCheckbox"]; }
+            set { this["NullifyVRPluginsCheckbox"] = value; }
+        }
     }
 }

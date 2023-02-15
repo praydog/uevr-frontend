@@ -37,6 +37,7 @@
                         <RadioButton x:Name="m_openvrRadio" Content="OpenVR" Foreground="White"/>
                         <RadioButton x:Name="m_openxrRadio" Content="OpenXR" Foreground="White"/>
                     </StackPanel>
+                    <CheckBox x:Name="m_nullifyVRPluginsCheckbox" Content="Nullify VR Plugins" Foreground="White"/>
                     <TextBlock x:Name="m_connectionStatus" TextWrapping="Wrap" Text="Unknown status"/>
                 </StackPanel>
             </GroupBox>

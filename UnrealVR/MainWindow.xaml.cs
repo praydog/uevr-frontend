@@ -144,6 +144,7 @@ namespace UnrealVR {
             FillProcessList();
             m_openvrRadio.IsChecked = m_mainWindowSettings.OpenVRRadio;
             m_openxrRadio.IsChecked = m_mainWindowSettings.OpenXRRadio;
+            m_nullifyVRPluginsCheckbox.IsChecked = m_mainWindowSettings.NullifyVRPluginsCheckbox;
 
             m_updateTimer.Tick += (sender, e) => Dispatcher.Invoke(MainWindow_Update);
             m_updateTimer.Start();
@@ -271,6 +272,7 @@ namespace UnrealVR {
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
             m_mainWindowSettings.OpenXRRadio = m_openxrRadio.IsChecked == true;
             m_mainWindowSettings.OpenVRRadio = m_openvrRadio.IsChecked == true;
+            m_mainWindowSettings.NullifyVRPluginsCheckbox = m_nullifyVRPluginsCheckbox.IsChecked == true;
 
             m_mainWindowSettings.Save();
         }
@@ -655,8 +657,19 @@ namespace UnrealVR {
                 runtimeName = "openvr_api.dll";
             }
 
-            if (Injector.InjectDll(runtimeName, process.Id)) {
-                Injector.InjectDll("UnrealVRBackend.dll", process.Id);
+            if (m_nullifyVRPluginsCheckbox.IsChecked == true) {
+                IntPtr nullifierBase;
+                if (Injector.InjectDll(process.Id, "UnrealVRPluginNullifier.dll", out nullifierBase) && nullifierBase.ToInt64() > 0) {
+                    if (!Injector.CallFunctionNoArgs(process.Id, "UnrealVRPluginNullifier.dll", nullifierBase, "nullify", true)) {
+                        MessageBox.Show("Failed to nullify VR plugins.");
+                    }
+                } else {
+                    MessageBox.Show("Failed to inject plugin nullifier.");
+                }
+            }
+
+            if (Injector.InjectDll(process.Id, runtimeName)) {
+                Injector.InjectDll(process.Id, "UnrealVRBackend.dll");
             }
         }
 
