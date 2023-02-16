@@ -682,34 +682,43 @@ namespace UnrealVR {
         private static extern bool IsWow64Process([In] IntPtr hProcess, [Out] out bool wow64Process);
 
         private bool IsInjectableProcess(Process process) {
-            if (Environment.Is64BitOperatingSystem) {
-                try {
-                    bool isWow64 = false;
-                    if (IsWow64Process(process.Handle, out isWow64) && isWow64) {
+            try {
+                if (Environment.Is64BitOperatingSystem) {
+                    try {
+                        bool isWow64 = false;
+                        if (IsWow64Process(process.Handle, out isWow64) && isWow64) {
+                            return false;
+                        }
+                    } catch {
+                        // If we threw an exception here, then the process probably can't be accessed anyways.
                         return false;
                     }
-                } catch {
-                    // If we threw an exception here, then the process probably can't be accessed anyways.
+                }
+
+                if (process.MainWindowTitle.Length == 0) {
                     return false;
                 }
-            }
 
-            if (process.MainWindowTitle.Length == 0) {
+                if (process.Id == Process.GetCurrentProcess().Id) {
+                    return false;
+                }
+
+                foreach (ProcessModule module in process.Modules) {
+                    if (module.ModuleName == null) {
+                        continue;
+                    }
+
+                    string moduleLow = module.ModuleName.ToLower();
+                    if (moduleLow == "d3d11.dll" || moduleLow == "d3d12.dll") {
+                        return true;
+                    }
+                }
+
+                return false;
+            } catch(Exception ex) {
+                Console.WriteLine(ex.ToString());
                 return false;
             }
-
-            foreach (ProcessModule module in process.Modules) {
-                if (module.ModuleName == null) {
-                    continue;
-                }
-
-                string moduleLow = module.ModuleName.ToLower();
-                if (moduleLow == "d3d11.dll" || moduleLow == "d3d12.dll") {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         private bool AnyInjectableProcesses(Process[] processList) {
