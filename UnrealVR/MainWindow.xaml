@@ -8,6 +8,7 @@
         Title="UnrealVR"
         Closing="MainWindow_Closing" Loaded="MainWindow_Loaded"
         SizeToContent="WidthAndHeight" ResizeMode="NoResize" Icon="/UEVR2.png"
+        WindowStartupLocation="CenterScreen"
         >
     <StackPanel x:Name="m_topStackPanel" Background="#FF4C4646" Orientation="Vertical">
         <Border BorderBrush="Black" BorderThickness="1">
