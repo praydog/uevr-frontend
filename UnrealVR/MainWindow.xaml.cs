@@ -81,6 +81,7 @@ namespace UnrealVR {
         public static Dictionary<string, string> Entries = new Dictionary<string, string>() {
             { "VR_RenderingMethod", ((int)RenderingMethod.NativeStereo).ToString() },
             { "VR_SyncedSequentialMethod", ((int)SyncedSequentialMethods.SkipDraw).ToString() },
+            { "VR_UncapFramerate", "true" }
         };
     };
 
