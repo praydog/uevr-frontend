@@ -240,6 +240,15 @@ namespace UnrealVR {
             Process.Start(explorerPath, directory);
         }
 
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+            if (e.ChangedButton == MouseButton.Left) {
+                this.DragMove();
+            }
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e) {
+            this.Close();
+        }
         private void OpenGlobalDir_Clicked(object sender, RoutedEventArgs e) {
             string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
@@ -569,6 +578,8 @@ namespace UnrealVR {
                             m_iniListView.ItemsSource = null; // Because we are switching processes.
                             InitializeConfig(p.ProcessName);
                         }
+
+                        m_lastDefaultProcessListName = GenerateProcessName(p);
                     }
                 }
             } catch (Exception ex) {
@@ -733,6 +744,7 @@ namespace UnrealVR {
             return false;
         }
         private SemaphoreSlim m_processSemaphore = new SemaphoreSlim(1, 1); // create a semaphore with initial count of 1 and max count of 1
+        private string? m_lastDefaultProcessListName = null;
 
         private async void FillProcessList() {
             // Allow the previous running FillProcessList task to finish first
@@ -762,6 +774,13 @@ namespace UnrealVR {
                                 foreach (Process p in m_processList) {
                                     string processName = GenerateProcessName(p);
                                     m_processListBox.Items.Add(processName);
+
+                                    if (m_processListBox.SelectedItem == null && m_processListBox.Items.Count > 0) {
+                                        if (m_lastDefaultProcessListName == null || m_lastDefaultProcessListName == processName) {
+                                            m_processListBox.SelectedItem = m_processListBox.Items[m_processListBox.Items.Count - 1];
+                                            m_lastDefaultProcessListName = processName;
+                                        }
+                                    }
                                 }
                             });
                         }
@@ -774,6 +793,13 @@ namespace UnrealVR {
                         foreach (Process process in m_processList) {
                             string processName = GenerateProcessName(process);
                             m_processListBox.Items.Add(processName);
+
+                            if (m_processListBox.SelectedItem == null && m_processListBox.Items.Count > 0) {
+                                if (m_lastDefaultProcessListName == null || m_lastDefaultProcessListName == processName) {
+                                    m_processListBox.SelectedItem = m_processListBox.Items[m_processListBox.Items.Count - 1];
+                                    m_lastDefaultProcessListName = processName;
+                                }
+                            }
                         }
                     });
                 });

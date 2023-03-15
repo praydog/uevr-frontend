@@ -4,76 +4,146 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UnrealVR"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        Background="#FF1A1B1C"
+        FontFamily="{DynamicResource MaterialDesignFont}"
         mc:Ignorable="d"
         Title="UnrealVR"
         Closing="MainWindow_Closing" Loaded="MainWindow_Loaded"
         SizeToContent="WidthAndHeight" ResizeMode="NoResize" Icon="/UEVR2.png"
         WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
         >
-    <StackPanel x:Name="m_topStackPanel" Background="#FF4C4646" Orientation="Vertical">
-        <Border BorderBrush="Black" BorderThickness="1">
-            <Menu x:Name="m_menu" ClipToBounds="True" HorizontalContentAlignment="Stretch">
-                <MenuItem Header="_About">
-                    <TextBlock TextWrapping="Wrap" Text="Author: praydog"/>
-                    <MenuItem Header="_Donate" Click="Donate_Clicked">
-                    </MenuItem>
-                </MenuItem>
-            </Menu>
+    <StackPanel x:Name="m_vertStackPanel" Orientation="Vertical">
+        <Border MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Background="#FF1A1B1C">
+            <Border.Style>
+                <Style TargetType="{x:Type Border}">
+                    <Setter Property="Cursor" Value="Hand"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Cursor" Value="SizeAll"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <DockPanel Height="30">
+                <TextBlock Text="{Binding Title, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"
+                       VerticalAlignment="Center"
+                       Margin="25,0,0,0"
+                       FontWeight="Bold"
+                       Foreground="White" />
+                <Button DockPanel.Dock="Right"
+                    Click="CloseButton_Click"
+                    Width="30"
+                    Height="30"
+                    Background="Transparent"
+                    BorderBrush="Transparent"
+                    HorizontalAlignment="Right"
+                >
+                    <materialDesign:PackIcon Kind="Close" HorizontalAlignment="Center" Height="30" Width="30">
+                    </materialDesign:PackIcon>
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <ContentPresenter Content="{TemplateBinding Content}" />
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </DockPanel>
         </Border>
-        <StackPanel Orientation="Horizontal">
-            <GroupBox Header="Settings" Foreground="White" ClipToBounds="True">
-                <StackPanel ClipToBounds="True" HorizontalAlignment="Left">
-                    <Button Visibility="Visible" x:Name="m_openGlobalDirectoryBtn" Content="Open Global Dir" 
-                            HorizontalAlignment="Left" Click="OpenGlobalDir_Clicked" VerticalAlignment="Top"/>
-                    <Button Visibility="Collapsed" x:Name="m_openGameDirectoryBtn" Content="Open Game Dir" 
-                            HorizontalAlignment="Left" Click="OpenGameDir_Clicked">
-                    </Button>
-                </StackPanel>
-            </GroupBox>
-            <GroupBox Header="Inject" Foreground="White" ClipToBounds="True">
-                <StackPanel ClipToBounds="True" HorizontalAlignment="Left">
-                    <ComboBox x:Name="m_processListBox" DropDownOpened="ComboBox_DropDownOpened" SelectionChanged="ComboBox_SelectionChanged" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="300"/>
+        <StackPanel x:Name="m_sideStackPanel" Orientation="Horizontal">
+                <Menu>
+                    <Menu.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </Menu.ItemsPanel>
+                    <MenuItem>
+                        <MenuItem.Header>
+                            <StackPanel Width="75">
+                                <materialDesign:PackIcon Kind="QuestionMark" HorizontalAlignment="Center" Height="30" Width="30">
+                                </materialDesign:PackIcon>
+                            </StackPanel>
+                        </MenuItem.Header>
+                        <TextBlock TextWrapping="Wrap" Text="Author: praydog"/>
+
+                        <MenuItem Header="_Donate" Click="Donate_Clicked">
+                        </MenuItem>
+                    </MenuItem>
+                    <MenuItem x:Name="m_openGlobalDirectoryBtn" Click="OpenGlobalDir_Clicked">
+                        <MenuItem.Header>
+                            <StackPanel Width="75">
+                                <materialDesign:PackIcon Kind="Folder" HorizontalAlignment="Center" Height="30" Width="30">
+                                </materialDesign:PackIcon>
+                                <TextBlock Text="Open Global Dir" HorizontalAlignment="Center" FontSize="10"/>
+                            </StackPanel>
+                        </MenuItem.Header>
+                    </MenuItem>
+                    <MenuItem Visibility="Collapsed" x:Name="m_openGameDirectoryBtn" Click="OpenGameDir_Clicked">
+                        <MenuItem.Header>
+                            <StackPanel Width="75">
+                                <materialDesign:PackIcon Kind="Folder" HorizontalAlignment="Center" Height="30" Width="30">
+                                </materialDesign:PackIcon>
+                                <TextBlock Text="Open Game Dir" HorizontalAlignment="Center" FontSize="10"/>
+                            </StackPanel>
+                        </MenuItem.Header>
+                    </MenuItem>
+                </Menu>
+                <StackPanel x:Name="m_topStackPanel" Orientation="Vertical">
                     <StackPanel Orientation="Horizontal">
-                        <Button x:Name="m_injectButton" Content="Inject" Click="Inject_Clicked" HorizontalAlignment="Left"/>
-                        <RadioButton x:Name="m_openvrRadio" Content="OpenVR" Foreground="White"/>
-                        <RadioButton x:Name="m_openxrRadio" Content="OpenXR" Foreground="White"/>
+                        <GroupBox Header="Inject" ClipToBounds="True">
+                            <StackPanel ClipToBounds="True" HorizontalAlignment="Left">
+                                <ComboBox x:Name="m_processListBox" DropDownOpened="ComboBox_DropDownOpened" SelectionChanged="ComboBox_SelectionChanged" VerticalAlignment="Top" MinWidth="400"/>
+                                <Button x:Name="m_injectButton" Content="Inject" Click="Inject_Clicked"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton x:Name="m_openvrRadio" Content="OpenVR"/>
+                                    <RadioButton x:Name="m_openxrRadio" Content="OpenXR"/>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ToggleButton x:Name="m_nullifyVRPluginsCheckbox" HorizontalAlignment="Left"/>
+                                        <TextBlock TextWrapping="Wrap" Text="Nullify VR Plugins"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <TextBlock x:Name="m_connectionStatus" TextWrapping="Wrap" Text="Unknown status"/>
+                            </StackPanel>
+                        </GroupBox>
                     </StackPanel>
-                    <CheckBox x:Name="m_nullifyVRPluginsCheckbox" Content="Nullify VR Plugins" Foreground="White"/>
-                    <TextBlock x:Name="m_connectionStatus" TextWrapping="Wrap" Text="Unknown status"/>
+                    <GroupBox Header="Game Settings" ClipToBounds="True">
+                        <ListView x:Name="m_iniListView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" MaxHeight="640">
+                            <ListView.Resources>
+                                <DataTemplate x:Key="ComboBoxTemplate">
+                                    <ComboBox ToolTip="{Binding Tooltip}" ItemsSource="{Binding ComboValues}" SelectedValuePath="Key" DisplayMemberPath="Value" SelectedValue="{Binding Value}" SelectionChanged="ComboChanged_Value"/>
+                                </DataTemplate>
+                                <DataTemplate x:Key="TextBoxTemplate">
+                                    <TextBox ToolTip="{Binding Tooltip}" Text="{Binding Value, Mode=TwoWay}" Width="150" TextChanged="TextChanged_Value"/>
+                                </DataTemplate>
+                                <DataTemplate x:Key="CheckBoxTemplate">
+                                    <CheckBox ToolTip="{Binding Tooltip}" IsChecked="{Binding ValueAsBool}" Width="150" Checked="CheckChanged_Value" Unchecked="CheckChanged_Value"/>
+                                </DataTemplate>
+
+                                <DataTemplate x:Key="KeyTemplate">
+                                    <TextBlock ToolTip="{Binding Tooltip}" Text="{Binding Key}"/>
+                                </DataTemplate>
+
+                                <local:ValueTemplateSelector x:Key="valueTemplateSelector"
+                                     ComboBoxTemplate="{StaticResource ComboBoxTemplate}"
+                                     TextBoxTemplate="{StaticResource TextBoxTemplate}"
+                                     CheckboxTemplate="{StaticResource CheckBoxTemplate}"/>
+
+                            </ListView.Resources>
+
+                            <ListView.View>
+                                <GridView>
+                                    <GridViewColumn Header="Key" Width="200" CellTemplate="{StaticResource KeyTemplate}"/>
+                                    <GridViewColumn Header="Value" Width="150" CellTemplateSelector="{StaticResource valueTemplateSelector}"/>
+                                </GridView>
+                            </ListView.View>
+                        </ListView>
+                    </GroupBox>
                 </StackPanel>
-            </GroupBox>
-        </StackPanel>
-        <GroupBox Header="Game Settings" Foreground="White" ClipToBounds="True">
-            <ListView x:Name="m_iniListView" Background="#FF4C4646" Foreground="White" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2">
-                <ListView.Resources>
-                    <DataTemplate x:Key="ComboBoxTemplate">
-                        <ComboBox ToolTip="{Binding Tooltip}" ItemsSource="{Binding ComboValues}" SelectedValuePath="Key" DisplayMemberPath="Value" SelectedValue="{Binding Value}" SelectionChanged="ComboChanged_Value"/>
-                    </DataTemplate>
-                    <DataTemplate x:Key="TextBoxTemplate">
-                        <TextBox ToolTip="{Binding Tooltip}" Text="{Binding Value, Mode=TwoWay}" Width="150" TextChanged="TextChanged_Value"/>
-                    </DataTemplate>
-                    <DataTemplate x:Key="CheckBoxTemplate">
-                        <CheckBox ToolTip="{Binding Tooltip}" IsChecked="{Binding ValueAsBool}" Width="150" Checked="CheckChanged_Value" Unchecked="CheckChanged_Value"/>
-                    </DataTemplate>
-
-                    <DataTemplate x:Key="KeyTemplate">
-                        <TextBlock ToolTip="{Binding Tooltip}" Background="#FF4C4646" Text="{Binding Key}"/>
-                    </DataTemplate>
-
-                    <local:ValueTemplateSelector x:Key="valueTemplateSelector"
-                                 ComboBoxTemplate="{StaticResource ComboBoxTemplate}"
-                                 TextBoxTemplate="{StaticResource TextBoxTemplate}"
-                                 CheckboxTemplate="{StaticResource CheckBoxTemplate}"/>
-
-                </ListView.Resources>
-
-                <ListView.View>
-                    <GridView>
-                        <GridViewColumn Header="Key" Width="200" CellTemplate="{StaticResource KeyTemplate}"/>
-                        <GridViewColumn Header="Value" Width="150" CellTemplateSelector="{StaticResource valueTemplateSelector}"/>
-                    </GridView>
-                </ListView.View>
-            </ListView>
-        </GroupBox>
+            </StackPanel>
     </StackPanel>
 </Window>
