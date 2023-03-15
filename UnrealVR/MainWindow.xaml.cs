@@ -597,6 +597,7 @@ namespace UnrealVR {
                     if (pid != null) {
                         var target = Process.GetProcessById((int)pid);
                         target.CloseMainWindow();
+                        target.Kill();
                     }
                 } catch(Exception) {
 
