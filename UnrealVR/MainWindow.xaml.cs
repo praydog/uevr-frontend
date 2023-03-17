@@ -30,6 +30,7 @@ using Microsoft.Extensions.Configuration;
 using System.ComponentModel;
 using static UnrealVR.SharedMemory;
 using System.Threading.Channels;
+using System.Security.Principal;
 
 namespace UnrealVR {
     class GameSettingEntry {
@@ -141,7 +142,18 @@ namespace UnrealVR {
             InitializeComponent();
         }
 
+        public static bool IsAdministrator() {
+            WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            WindowsPrincipal principal = new WindowsPrincipal(identity);
+            return principal.IsInRole(WindowsBuiltInRole.Administrator);
+        }
         private void MainWindow_Loaded(object sender, RoutedEventArgs e) {
+            if (!IsAdministrator()) {
+                m_nNotificationsGroupBox.Visibility = Visibility.Visible;
+                m_restartAsAdminButton.Visibility = Visibility.Visible;
+                m_adminExplanation.Visibility = Visibility.Visible;
+            }
+
             FillProcessList();
             m_openvrRadio.IsChecked = m_mainWindowSettings.OpenVRRadio;
             m_openxrRadio.IsChecked = m_mainWindowSettings.OpenXRRadio;
@@ -149,6 +161,30 @@ namespace UnrealVR {
 
             m_updateTimer.Tick += (sender, e) => Dispatcher.Invoke(MainWindow_Update);
             m_updateTimer.Start();
+        }
+
+        private void RestartAsAdminButton_Click(object sender, RoutedEventArgs e) {
+            // Get the path of the current executable
+            var exePath = Process.GetCurrentProcess().MainModule.FileName;
+
+            // Create a new process with administrator privileges
+            var processInfo = new ProcessStartInfo {
+                FileName = exePath,
+                Verb = "runas",
+                UseShellExecute = true,
+            };
+
+            try {
+                // Attempt to start the process
+                Process.Start(processInfo);
+            } catch (Win32Exception ex) {
+                // Handle the case when the user cancels the UAC prompt or there's an error
+                MessageBox.Show($"Error: {ex.Message}\n\nThe application will continue running without administrator privileges.", "Failed to Restart as Admin", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Close the current application instance
+            Application.Current.Shutdown();
         }
 
         private void Update_InjectStatus() {

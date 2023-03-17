@@ -20,6 +20,7 @@
         WindowStyle="None"
         >
     <StackPanel x:Name="m_vertStackPanel" Orientation="Vertical">
+
         <Border MouseLeftButtonDown="TitleBar_MouseLeftButtonDown" Background="#FF1A1B1C">
             <Border.Style>
                 <Style TargetType="{x:Type Border}">
@@ -94,10 +95,16 @@
                     </MenuItem>
                 </Menu>
                 <StackPanel x:Name="m_topStackPanel" Orientation="Vertical">
-                    <StackPanel Orientation="Horizontal">
-                        <GroupBox Header="Inject" ClipToBounds="True">
-                            <StackPanel ClipToBounds="True" HorizontalAlignment="Left">
-                                <ComboBox x:Name="m_processListBox" DropDownOpened="ComboBox_DropDownOpened" SelectionChanged="ComboBox_SelectionChanged" VerticalAlignment="Top" MinWidth="400"/>
+                <GroupBox x:Name="m_nNotificationsGroupBox" Header="Notifications" ClipToBounds="True" Visibility="Collapsed">
+                    <StackPanel>
+                    <TextBlock x:Name="m_adminExplanation" TextWrapping="Wrap" Text="Some executables may not show up or fail to inject unless started as Administrator." Visibility="Collapsed"/>
+                    <Button x:Name="m_restartAsAdminButton" Content="Restart as Administrator" Click="RestartAsAdminButton_Click" Visibility="Collapsed"/>
+                    </StackPanel>
+                </GroupBox>
+                <StackPanel Orientation="Horizontal">
+                    <GroupBox Header="Inject" ClipToBounds="True">
+                        <StackPanel ClipToBounds="True" HorizontalAlignment="Left">
+                            <ComboBox x:Name="m_processListBox" DropDownOpened="ComboBox_DropDownOpened" SelectionChanged="ComboBox_SelectionChanged" VerticalAlignment="Top" MinWidth="500"/>
                                 <Button x:Name="m_injectButton" Content="Inject" Click="Inject_Clicked"/>
                                 <StackPanel Orientation="Horizontal">
                                     <RadioButton x:Name="m_openvrRadio" Content="OpenVR"/>
