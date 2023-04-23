@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="discord.png" />
+    <None Remove="donate.png" />
     <None Remove="UEVR.png" />
     <None Remove="UEVR2.png" />
   </ItemGroup>
@@ -26,6 +28,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="discord.png" />
+    <Resource Include="donate.png" />
     <Resource Include="UEVR2.png" />
   </ItemGroup>
 

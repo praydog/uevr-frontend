@@ -57,28 +57,29 @@
             </DockPanel>
         </Border>
         <StackPanel x:Name="m_sideStackPanel" Orientation="Horizontal">
-                <Menu>
-                    <Menu.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <VirtualizingStackPanel Orientation="Vertical"/>
-                        </ItemsPanelTemplate>
-                    </Menu.ItemsPanel>
-                    <MenuItem>
-                        <MenuItem.Header>
-                            <StackPanel Width="75">
-                                <materialDesign:PackIcon Kind="QuestionMark" HorizontalAlignment="Center" Height="30" Width="30">
-                                </materialDesign:PackIcon>
-                            </StackPanel>
-                        </MenuItem.Header>
-                        <TextBlock TextWrapping="Wrap" Text="Author: praydog"/>
+            <DockPanel>
+                <Menu DockPanel.Dock="Top" HorizontalAlignment="Center">
+                <Menu.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel Orientation="Vertical"/>
+                    </ItemsPanelTemplate>
+                </Menu.ItemsPanel>
+                <MenuItem>
+                    <MenuItem.Header>
+                        <StackPanel Width="75">
+                            <materialDesign:PackIcon Kind="QuestionMark" HorizontalAlignment="Center" Height="30" Width="30">
+                            </materialDesign:PackIcon>
+                        </StackPanel>
+                    </MenuItem.Header>
+                    <TextBlock TextWrapping="Wrap" Text="Author: praydog"/>
 
-                        <MenuItem Header="_Documentation" Click="Documentation_Clicked">
-                        </MenuItem>
-
-                        <MenuItem Header="_Donate" Click="Donate_Clicked">
-                        </MenuItem>
+                    <MenuItem Header="_Documentation" Click="Documentation_Clicked">
                     </MenuItem>
-                    <MenuItem x:Name="m_openGlobalDirectoryBtn" Click="OpenGlobalDir_Clicked">
+
+                    <MenuItem Header="_Donate" Click="Donate_Clicked">
+                    </MenuItem>
+                </MenuItem>
+                <MenuItem x:Name="m_openGlobalDirectoryBtn" Click="OpenGlobalDir_Clicked">
                         <MenuItem.Header>
                             <StackPanel Width="75">
                                 <materialDesign:PackIcon Kind="Folder" HorizontalAlignment="Center" Height="30" Width="30">
@@ -97,7 +98,16 @@
                         </MenuItem.Header>
                     </MenuItem>
                 </Menu>
-                <StackPanel x:Name="m_topStackPanel" Orientation="Vertical">
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom">
+                    <Button Margin="5" Click="Donate_Clicked" Background="Transparent" BorderThickness="0,0,0,0" RenderOptions.BitmapScalingMode="HighQuality">
+                        <Image Source="donate.png" HorizontalAlignment="Center" Height="30" Width="30" />
+                    </Button>
+                    <Button Margin="5" Click="Discord_Clicked" Background="Transparent" BorderThickness="0,0,0,0" RenderOptions.BitmapScalingMode="HighQuality">
+                        <Image Source="discord.png" HorizontalAlignment="Center" Height="30" Width="30" />
+                    </Button>
+                </StackPanel>
+            </DockPanel>
+            <StackPanel x:Name="m_topStackPanel" Orientation="Vertical">
                 <GroupBox x:Name="m_nNotificationsGroupBox" Header="Notifications" ClipToBounds="True" Visibility="Collapsed">
                     <StackPanel>
                     <TextBlock x:Name="m_adminExplanation" TextWrapping="Wrap" Text="Some executables may not show up or fail to inject unless started as Administrator." Visibility="Collapsed"/>
