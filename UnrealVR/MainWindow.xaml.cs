@@ -635,6 +635,10 @@ namespace UnrealVR {
             Process.Start(new ProcessStartInfo("https://patreon.com/praydog") { UseShellExecute = true });
         }
 
+        private void Documentation_Clicked(object sender, RoutedEventArgs e) {
+            Process.Start(new ProcessStartInfo("https://praydog.github.io/uuvr-docs/") { UseShellExecute = true });
+        }
+
         private void Inject_Clicked(object sender, RoutedEventArgs e) {
             // "Terminate Connected Process"
             if (m_connected) {

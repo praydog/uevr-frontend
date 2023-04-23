@@ -72,6 +72,9 @@
                         </MenuItem.Header>
                         <TextBlock TextWrapping="Wrap" Text="Author: praydog"/>
 
+                        <MenuItem Header="_Documentation" Click="Documentation_Clicked">
+                        </MenuItem>
+
                         <MenuItem Header="_Donate" Click="Donate_Clicked">
                         </MenuItem>
                     </MenuItem>
