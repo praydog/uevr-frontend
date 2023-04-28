@@ -12,6 +12,7 @@
   <ItemGroup>
     <None Remove="discord.png" />
     <None Remove="donate.png" />
+    <None Remove="github.png" />
     <None Remove="UEVR.png" />
     <None Remove="UEVR2.png" />
   </ItemGroup>
@@ -30,6 +31,7 @@
   <ItemGroup>
     <Resource Include="discord.png" />
     <Resource Include="donate.png" />
+    <Resource Include="github.png" />
     <Resource Include="UEVR2.png" />
   </ItemGroup>
 
