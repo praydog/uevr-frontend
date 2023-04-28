@@ -13,7 +13,7 @@
         Background="#FF1A1B1C"
         FontFamily="{DynamicResource MaterialDesignFont}"
         mc:Ignorable="d"
-        Title="UnrealVR"
+        Title="UEVR"
         Closing="MainWindow_Closing" Loaded="MainWindow_Loaded"
         SizeToContent="WidthAndHeight" ResizeMode="NoResize" Icon="/UEVR2.png"
         WindowStartupLocation="CenterScreen"
