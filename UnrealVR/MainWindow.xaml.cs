@@ -163,6 +163,10 @@ namespace UnrealVR {
             m_updateTimer.Start();
         }
 
+        private static bool IsExecutableRunning(string executableName) {
+            return Process.GetProcesses().Any(p => p.ProcessName.Equals(executableName, StringComparison.OrdinalIgnoreCase));
+        }
+
         private void RestartAsAdminButton_Click(object sender, RoutedEventArgs e) {
             // Get the path of the current executable
             var exePath = Process.GetCurrentProcess().MainModule.FileName;
@@ -310,9 +314,27 @@ namespace UnrealVR {
             NavigateToDirectory(directory);
         }
 
+        private bool m_virtualDesktopWarned = false;
+        private bool m_virtualDesktopChecked = false;
+        private void Check_VirtualDesktop(bool checkWarn = false) {
+            if (checkWarn && m_virtualDesktopWarned) {
+                return;
+            }
+
+            if (IsExecutableRunning("VirtualDesktop.Streamer")) {
+                m_virtualDesktopWarned = true;
+                MessageBox.Show("Virtual Desktop has been detected running.\nMake sure you use OpenXR for the least issues.\nSteamVR must already be started.", "VD Warning", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+
         private void MainWindow_Update() {
             Update_InjectorConnectionStatus();
             Update_InjectStatus();
+
+            if (m_virtualDesktopChecked == false) {
+                m_virtualDesktopChecked = true;
+                Check_VirtualDesktop();
+            }
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
@@ -610,6 +632,8 @@ namespace UnrealVR {
                                         break;
                                 };
                             }
+
+                            Check_VirtualDesktop(true);
 
                             m_iniListView.ItemsSource = null; // Because we are switching processes.
                             InitializeConfig(p.ProcessName);
