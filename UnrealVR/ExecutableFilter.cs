@@ -9,20 +9,28 @@ using System.IO;
 
 namespace UnrealVR {
     public class ExecutableFilter {
-        private HashSet<string> m_invalidExecutables;
+        private HashSet<string> m_invalidExecutables = new HashSet<string>();
 
         public ExecutableFilter() {
-            m_invalidExecutables = new HashSet<string>(LoadFilterList());
+            var filter = LoadFilterList();
+            if (filter != null) {
+                m_invalidExecutables = new HashSet<string>(filter);
+            }
         }
 
-        private List<string> LoadFilterList() {
+        private List<string>? LoadFilterList() {
             var assembly = Assembly.GetExecutingAssembly();
             var resourceName = "UnrealVR.FilteredExecutables.json";
 
-            using (Stream stream = assembly.GetManifestResourceStream(resourceName))
-            using (StreamReader reader = new StreamReader(stream)) {
-                string json = reader.ReadToEnd();
-                return JsonConvert.DeserializeObject<List<string>>(json);
+            using (Stream? stream = assembly.GetManifestResourceStream(resourceName)) {
+                if (stream == null) {
+                    return new List<String>();
+                }
+
+                using (StreamReader reader = new StreamReader(stream)) {
+                    string json = reader.ReadToEnd();
+                    return JsonConvert.DeserializeObject<List<string>>(json);
+                }
             }
         }
 
