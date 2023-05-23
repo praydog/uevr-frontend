@@ -138,6 +138,8 @@ namespace UnrealVR {
         private IConfiguration? m_currentConfig = null;
         private string? m_currentConfigPath = null;
 
+        private ExecutableFilter m_executableFilter = new ExecutableFilter();
+
         public MainWindow() {
             InitializeComponent();
         }
@@ -786,6 +788,10 @@ namespace UnrealVR {
                     return false;
                 }
 
+                if (!m_executableFilter.IsValidExecutable(process.ProcessName.ToLower())) {
+                    return false;
+                }
+
                 foreach (ProcessModule module in process.Modules) {
                     if (module.ModuleName == null) {
                         continue;
@@ -793,7 +799,7 @@ namespace UnrealVR {
 
                     string moduleLow = module.ModuleName.ToLower();
                     if (moduleLow == "d3d11.dll" || moduleLow == "d3d12.dll") {
-                        return true;
+                        return true ;
                     }
                 }
 
@@ -834,26 +840,28 @@ namespace UnrealVR {
 
                     // loop through the list of processes
                     foreach (Process process in processList) {
-                        if (IsInjectableProcess(process)) {
-                            Application.Current.Dispatcher.Invoke(() =>
-                            {
-                                m_processList.Add(process);
-                                m_processList.Sort((a, b) => a.ProcessName.CompareTo(b.ProcessName));
-                                m_processListBox.Items.Clear();
+                        if (!IsInjectableProcess(process)) {
+                            continue;
+                        }
 
-                                foreach (Process p in m_processList) {
-                                    string processName = GenerateProcessName(p);
-                                    m_processListBox.Items.Add(processName);
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            m_processList.Add(process);
+                            m_processList.Sort((a, b) => a.ProcessName.CompareTo(b.ProcessName));
+                            m_processListBox.Items.Clear();
 
-                                    if (m_processListBox.SelectedItem == null && m_processListBox.Items.Count > 0) {
-                                        if (m_lastDefaultProcessListName == null || m_lastDefaultProcessListName == processName) {
-                                            m_processListBox.SelectedItem = m_processListBox.Items[m_processListBox.Items.Count - 1];
-                                            m_lastDefaultProcessListName = processName;
-                                        }
+                            foreach (Process p in m_processList) {
+                                string processName = GenerateProcessName(p);
+                                m_processListBox.Items.Add(processName);
+
+                                if (m_processListBox.SelectedItem == null && m_processListBox.Items.Count > 0) {
+                                    if (m_lastDefaultProcessListName == null || m_lastDefaultProcessListName == processName) {
+                                        m_processListBox.SelectedItem = m_processListBox.Items[m_processListBox.Items.Count - 1];
+                                        m_lastDefaultProcessListName = processName;
                                     }
                                 }
-                            });
-                        }
+                            }
+                        });
                     }
 
                     Application.Current.Dispatcher.Invoke(() =>

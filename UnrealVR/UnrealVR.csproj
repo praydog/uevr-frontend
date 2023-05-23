@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
-    <RootNamespace>wpf_test</RootNamespace>
+    <RootNamespace>UnrealVR</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>uevr.ico</ApplicationIcon>
@@ -12,6 +12,7 @@
   <ItemGroup>
     <None Remove="discord.png" />
     <None Remove="donate.png" />
+    <None Remove="FilteredExecutables.json" />
     <None Remove="github.png" />
     <None Remove="UEVR.png" />
     <None Remove="UEVR2.png" />
@@ -22,10 +23,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="FilteredExecutables.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MaterialDesignColors" Version="2.1.2" />
     <PackageReference Include="MaterialDesignThemes" Version="4.8.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="7.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
