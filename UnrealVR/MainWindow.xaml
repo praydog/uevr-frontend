@@ -59,27 +59,27 @@
         <StackPanel x:Name="m_sideStackPanel" Orientation="Horizontal">
             <DockPanel>
                 <Menu DockPanel.Dock="Top" HorizontalAlignment="Center">
-                <Menu.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <VirtualizingStackPanel Orientation="Vertical"/>
-                    </ItemsPanelTemplate>
-                </Menu.ItemsPanel>
-                <MenuItem>
-                    <MenuItem.Header>
-                        <StackPanel Width="75">
-                            <materialDesign:PackIcon Kind="QuestionMark" HorizontalAlignment="Center" Height="30" Width="30">
-                            </materialDesign:PackIcon>
-                        </StackPanel>
-                    </MenuItem.Header>
-                    <TextBlock TextWrapping="Wrap" Text="Author: praydog"/>
+                    <Menu.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <VirtualizingStackPanel Orientation="Vertical"/>
+                        </ItemsPanelTemplate>
+                    </Menu.ItemsPanel>
+                    <MenuItem>
+                        <MenuItem.Header>
+                            <StackPanel Width="75">
+                                <materialDesign:PackIcon Kind="QuestionMark" HorizontalAlignment="Center" Height="30" Width="30">
+                                </materialDesign:PackIcon>
+                            </StackPanel>
+                        </MenuItem.Header>
+                        <TextBlock TextWrapping="Wrap" Text="Author: praydog"/>
 
-                    <MenuItem Header="_Documentation" Click="Documentation_Clicked">
-                    </MenuItem>
+                        <MenuItem Header="_Documentation" Click="Documentation_Clicked">
+                        </MenuItem>
 
-                    <MenuItem Header="_Donate" Click="Donate_Clicked">
+                        <MenuItem Header="_Donate" Click="Donate_Clicked">
+                        </MenuItem>
                     </MenuItem>
-                </MenuItem>
-                <MenuItem x:Name="m_openGlobalDirectoryBtn" Click="OpenGlobalDir_Clicked">
+                    <MenuItem x:Name="m_openGlobalDirectoryBtn" Click="OpenGlobalDir_Clicked">
                         <MenuItem.Header>
                             <StackPanel Width="75">
                                 <materialDesign:PackIcon Kind="Folder" HorizontalAlignment="Center" Height="30" Width="30">
@@ -97,9 +97,35 @@
                             </StackPanel>
                         </MenuItem.Header>
                     </MenuItem>
+                    <MenuItem Visibility="Visible" x:Name="m_exportConfigBtn" Click="ExportConfig_Clicked">
+                        <MenuItem.Header>
+                            <StackPanel Width="75">
+                                <materialDesign:PackIcon Kind="Export"  HorizontalAlignment="Center" Height="30" Width="30" RenderTransformOrigin="0.5,0.5">
+                                    <materialDesign:PackIcon.RenderTransform>
+                                        <TransformGroup>
+                                            <ScaleTransform/>
+                                            <SkewTransform/>
+                                            <RotateTransform Angle="180"/>
+                                            <TranslateTransform/>
+                                        </TransformGroup>
+                                    </materialDesign:PackIcon.RenderTransform>
+                                </materialDesign:PackIcon>
+                                <TextBlock Text="Export Config" HorizontalAlignment="Center" FontSize="10"/>
+                            </StackPanel>
+                        </MenuItem.Header>
+                    </MenuItem>
+                    <MenuItem Visibility="Visible" x:Name="m_importConfigBtn" Click="ImportConfig_Clicked">
+                        <MenuItem.Header>
+                            <StackPanel Width="75">
+                                <materialDesign:PackIcon Kind="Import"  HorizontalAlignment="Center" Height="30" Width="30" RenderTransformOrigin="0.5,0.5">
+                                </materialDesign:PackIcon>
+                                <TextBlock Text="Import Config" HorizontalAlignment="Center" FontSize="10"/>
+                            </StackPanel>
+                        </MenuItem.Header>
+                    </MenuItem>
                 </Menu>
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Bottom">
-                <TextBlock TextWrapping="Wrap" Text="Author: praydog"/>
+                    <TextBlock TextWrapping="Wrap" Text="Author: praydog"/>
                 </StackPanel>
                 <StackPanel DockPanel.Dock="Bottom" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Bottom">
                     <Button Margin="5" Click="GitHub_Clicked" Background="Transparent" BorderThickness="0,0,0,0" RenderOptions.BitmapScalingMode="HighQuality" Height="40">
@@ -116,60 +142,60 @@
             <StackPanel x:Name="m_topStackPanel" Orientation="Vertical">
                 <GroupBox x:Name="m_nNotificationsGroupBox" Header="Notifications" ClipToBounds="True" Visibility="Collapsed">
                     <StackPanel>
-                    <TextBlock x:Name="m_adminExplanation" TextWrapping="Wrap" Text="Some executables may not show up or fail to inject unless started as Administrator." Visibility="Collapsed"/>
-                    <Button x:Name="m_restartAsAdminButton" Content="Restart as Administrator" Click="RestartAsAdminButton_Click" Visibility="Collapsed"/>
+                        <TextBlock x:Name="m_adminExplanation" TextWrapping="Wrap" Text="Some executables may not show up or fail to inject unless started as Administrator." Visibility="Collapsed"/>
+                        <Button x:Name="m_restartAsAdminButton" Content="Restart as Administrator" Click="RestartAsAdminButton_Click" Visibility="Collapsed"/>
                     </StackPanel>
                 </GroupBox>
                 <StackPanel Orientation="Horizontal">
                     <GroupBox Header="Inject" ClipToBounds="True">
                         <StackPanel ClipToBounds="True" HorizontalAlignment="Left">
                             <ComboBox x:Name="m_processListBox" DropDownOpened="ComboBox_DropDownOpened" SelectionChanged="ComboBox_SelectionChanged" VerticalAlignment="Top" MinWidth="500"/>
-                                <Button x:Name="m_injectButton" Content="Inject" Click="Inject_Clicked"/>
+                            <Button x:Name="m_injectButton" Content="Inject" Click="Inject_Clicked"/>
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton x:Name="m_openvrRadio" Content="OpenVR"/>
+                                <RadioButton x:Name="m_openxrRadio" Content="OpenXR"/>
                                 <StackPanel Orientation="Horizontal">
-                                    <RadioButton x:Name="m_openvrRadio" Content="OpenVR"/>
-                                    <RadioButton x:Name="m_openxrRadio" Content="OpenXR"/>
-                                    <StackPanel Orientation="Horizontal">
-                                        <ToggleButton x:Name="m_nullifyVRPluginsCheckbox" HorizontalAlignment="Left"/>
-                                        <TextBlock TextWrapping="Wrap" Text="Nullify VR Plugins"/>
-                                    </StackPanel>
+                                    <ToggleButton x:Name="m_nullifyVRPluginsCheckbox" HorizontalAlignment="Left"/>
+                                    <TextBlock TextWrapping="Wrap" Text="Nullify VR Plugins"/>
                                 </StackPanel>
-                                <TextBlock x:Name="m_connectionStatus" TextWrapping="Wrap" Text="Unknown status"/>
                             </StackPanel>
-                        </GroupBox>
-                    </StackPanel>
-                    <GroupBox Header="Game Settings" ClipToBounds="True">
-                        <ListView x:Name="m_iniListView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" MaxHeight="640">
-                            <ListView.Resources>
-                                <DataTemplate x:Key="ComboBoxTemplate">
-                                    <ComboBox ToolTip="{Binding Tooltip}" ItemsSource="{Binding ComboValues}" SelectedValuePath="Key" DisplayMemberPath="Value" SelectedValue="{Binding Value}" SelectionChanged="ComboChanged_Value"/>
-                                </DataTemplate>
-                                <DataTemplate x:Key="TextBoxTemplate">
-                                    <TextBox ToolTip="{Binding Tooltip}" Text="{Binding Value, Mode=TwoWay}" Width="150" TextChanged="TextChanged_Value"/>
-                                </DataTemplate>
-                                <DataTemplate x:Key="CheckBoxTemplate">
-                                    <CheckBox ToolTip="{Binding Tooltip}" IsChecked="{Binding ValueAsBool}" Width="150" Checked="CheckChanged_Value" Unchecked="CheckChanged_Value"/>
-                                </DataTemplate>
+                            <TextBlock x:Name="m_connectionStatus" TextWrapping="Wrap" Text="Unknown status"/>
+                        </StackPanel>
+                    </GroupBox>
+                </StackPanel>
+                <GroupBox Header="Game Settings" ClipToBounds="True">
+                    <ListView x:Name="m_iniListView" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" MaxHeight="640">
+                        <ListView.Resources>
+                            <DataTemplate x:Key="ComboBoxTemplate">
+                                <ComboBox ToolTip="{Binding Tooltip}" ItemsSource="{Binding ComboValues}" SelectedValuePath="Key" DisplayMemberPath="Value" SelectedValue="{Binding Value}" SelectionChanged="ComboChanged_Value"/>
+                            </DataTemplate>
+                            <DataTemplate x:Key="TextBoxTemplate">
+                                <TextBox ToolTip="{Binding Tooltip}" Text="{Binding Value, Mode=TwoWay}" Width="150" TextChanged="TextChanged_Value"/>
+                            </DataTemplate>
+                            <DataTemplate x:Key="CheckBoxTemplate">
+                                <CheckBox ToolTip="{Binding Tooltip}" IsChecked="{Binding ValueAsBool}" Width="150" Checked="CheckChanged_Value" Unchecked="CheckChanged_Value"/>
+                            </DataTemplate>
 
-                                <DataTemplate x:Key="KeyTemplate">
-                                    <TextBlock ToolTip="{Binding Tooltip}" Text="{Binding Key}"/>
-                                </DataTemplate>
+                            <DataTemplate x:Key="KeyTemplate">
+                                <TextBlock ToolTip="{Binding Tooltip}" Text="{Binding Key}"/>
+                            </DataTemplate>
 
-                                <local:ValueTemplateSelector x:Key="valueTemplateSelector"
+                            <local:ValueTemplateSelector x:Key="valueTemplateSelector"
                                      ComboBoxTemplate="{StaticResource ComboBoxTemplate}"
                                      TextBoxTemplate="{StaticResource TextBoxTemplate}"
                                      CheckboxTemplate="{StaticResource CheckBoxTemplate}"/>
 
-                            </ListView.Resources>
+                        </ListView.Resources>
 
-                            <ListView.View>
-                                <GridView>
-                                    <GridViewColumn Header="Key" Width="200" CellTemplate="{StaticResource KeyTemplate}"/>
-                                    <GridViewColumn Header="Value" Width="150" CellTemplateSelector="{StaticResource valueTemplateSelector}"/>
-                                </GridView>
-                            </ListView.View>
-                        </ListView>
-                    </GroupBox>
-                </StackPanel>
+                        <ListView.View>
+                            <GridView>
+                                <GridViewColumn Header="Key" Width="200" CellTemplate="{StaticResource KeyTemplate}"/>
+                                <GridViewColumn Header="Value" Width="150" CellTemplateSelector="{StaticResource valueTemplateSelector}"/>
+                            </GridView>
+                        </ListView.View>
+                    </ListView>
+                </GroupBox>
             </StackPanel>
+        </StackPanel>
     </StackPanel>
 </Window>

@@ -104,11 +104,11 @@ namespace UnrealVR {
     }
 
     public class ValueTemplateSelector : DataTemplateSelector {
-        public DataTemplate ComboBoxTemplate { get; set; }
-        public DataTemplate TextBoxTemplate { get; set; }
-        public DataTemplate CheckboxTemplate { get; set; }
+        public DataTemplate? ComboBoxTemplate { get; set; }
+        public DataTemplate? TextBoxTemplate { get; set; }
+        public DataTemplate? CheckboxTemplate { get; set; }
 
-        public override DataTemplate SelectTemplate(object item, DependencyObject container) {
+        public override DataTemplate? SelectTemplate(object item, DependencyObject container) {
             var keyValuePair = (GameSettingEntry)item;
             if (ComboMapping.KeyEnums.ContainsKey(keyValuePair.Key)) {
                 return ComboBoxTemplate;
@@ -171,7 +171,15 @@ namespace UnrealVR {
 
         private void RestartAsAdminButton_Click(object sender, RoutedEventArgs e) {
             // Get the path of the current executable
-            var exePath = Process.GetCurrentProcess().MainModule.FileName;
+            var mainModule = Process.GetCurrentProcess().MainModule;
+            if (mainModule == null) {
+                return;
+            }
+
+            var exePath = mainModule.FileName;
+            if (exePath == null) {
+                return;
+            }
 
             // Create a new process with administrator privileges
             var processInfo = new ProcessStartInfo {
@@ -279,7 +287,7 @@ namespace UnrealVR {
         private void NavigateToDirectory(string directory) {
             string windowsDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
             string explorerPath = System.IO.Path.Combine(windowsDirectory, "explorer.exe");
-            Process.Start(explorerPath, directory);
+            Process.Start(explorerPath, "\"" + directory + "\"");
         }
 
         private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
@@ -291,10 +299,16 @@ namespace UnrealVR {
         private void CloseButton_Click(object sender, RoutedEventArgs e) {
             this.Close();
         }
-        private void OpenGlobalDir_Clicked(object sender, RoutedEventArgs e) {
+
+        private string GetGlobalDirPath() {
             string directory = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
             directory += "\\UnrealVRMod";
+            return directory;
+        }
+
+        private void OpenGlobalDir_Clicked(object sender, RoutedEventArgs e) {
+            string directory = GetGlobalDirPath();
 
             if (!System.IO.Directory.Exists(directory)) {
                 System.IO.Directory.CreateDirectory(directory);
@@ -314,6 +328,68 @@ namespace UnrealVR {
             }
 
             NavigateToDirectory(directory);
+        }
+        private void ExportConfig_Clicked(object sender, RoutedEventArgs e) {
+            if (!m_connected) {
+                MessageBox.Show("Inject into a game first!");
+                return;
+            }
+
+            if (m_lastSharedData == null) {
+                MessageBox.Show("No game connection detected.");
+                return;
+            }
+
+            var dir = GetGlobalGameDir(m_lastSelectedProcessName);
+            if (dir == null) {
+                return;
+            }
+
+            if (!Directory.Exists(dir)) {
+                MessageBox.Show("Directory does not exist.");
+                return;
+            }
+
+            var exportedConfigsDir = GetGlobalDirPath() + "\\ExportedConfigs";
+
+            if (!Directory.Exists(exportedConfigsDir)) {
+                Directory.CreateDirectory(exportedConfigsDir);
+            }
+
+            GameConfig.CreateZipFromDirectory(dir, exportedConfigsDir + "\\" + m_lastSelectedProcessName + ".zip");
+            NavigateToDirectory(exportedConfigsDir);
+        }
+
+        private void ImportConfig_Clicked(object sender, RoutedEventArgs e) {
+            var importPath = GameConfig.BrowseForImport(GetGlobalDirPath());
+
+            if (importPath == null) {
+                return;
+            }
+
+            var gameName = System.IO.Path.GetFileNameWithoutExtension(importPath);
+            if (gameName == null) {
+                MessageBox.Show("Invalid filename");
+                return;
+            }
+
+            var globalDir = GetGlobalDirPath();
+            var gameGlobalDir = globalDir + "\\" + gameName;
+
+            try {
+                if (!Directory.Exists(gameGlobalDir)) {
+                    Directory.CreateDirectory(gameGlobalDir);
+                }
+
+                GameConfig.ExtractZipToDirectory(importPath, gameGlobalDir);
+                NavigateToDirectory(gameGlobalDir);
+
+                if (m_connected) {
+                    SharedMemory.SendCommand(SharedMemory.Command.ReloadConfig);
+                }
+            } catch (Exception ex) {
+                MessageBox.Show("An error occurred: " + ex.Message);
+            }
         }
 
         private bool m_virtualDesktopWarned = false;
