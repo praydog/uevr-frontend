@@ -15,7 +15,16 @@
   "steamwebhelper",
   "oculusclient",
   "oculusdebugtool",
+  "ovrserver_x64",
   "vrmonitor",
   "microsoft.media.player",
-  "microsoft.msn.weather"
+  "microsoft.msn.weather",
+  "ida",
+  "ida64",
+  "spotify",
+  "hxoutlook",
+  "hxcalendarappimm",
+  "sublime_merge",
+  "sublime_text",
+  "xboxpcapp"
 ]
