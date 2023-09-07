@@ -246,8 +246,12 @@ namespace UnrealVR {
             m_openGameDirectoryBtn.Visibility = Visibility.Visible;
         }
 
+        private DateTime lastInjectorStatusUpdate = DateTime.MinValue;
+
         private void Update_InjectorConnectionStatus() {
             var data = SharedMemory.GetData();
+            DateTime now = DateTime.Now;
+            TimeSpan oneSecond = TimeSpan.FromSeconds(1);
 
             if (data != null) {
                 m_connectionStatus.Text = UnrealVRConnectionStatus.Connected;
@@ -256,11 +260,18 @@ namespace UnrealVR {
                 m_lastSharedData = data;
                 m_connected = true;
                 Show_ConnectionOptions();
+
+                if (data?.signalFrontendConfigSetup == true && (now - lastInjectorStatusUpdate > oneSecond)) {
+                    SharedMemory.SendCommand(SharedMemory.Command.ConfigSetupAcknowledged);
+                    RefreshCurrentConfig();
+                }
             } else {
                 m_connectionStatus.Text = UnrealVRConnectionStatus.NoInstanceDetected;
                 m_connected = false;
                 Hide_ConnectionOptions();
             }
+
+            lastInjectorStatusUpdate = DateTime.Now;
         }
 
         private string GetGlobalDir() {

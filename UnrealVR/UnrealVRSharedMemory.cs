@@ -28,10 +28,14 @@ namespace UnrealVR {
 
             [MarshalAs(UnmanagedType.I4)]
             public int commandThreadId;
+
+            [MarshalAs(UnmanagedType.I1)]
+            public bool signalFrontendConfigSetup;
         };
 
         public enum Command {
-            ReloadConfig
+            ReloadConfig,
+            ConfigSetupAcknowledged
         };
 
         public static string SharedMemoryName = "UnrealVRMod";
