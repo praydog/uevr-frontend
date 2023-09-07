@@ -33,16 +33,46 @@ using System.Threading.Channels;
 using System.Security.Principal;
 
 namespace UnrealVR {
-    class GameSettingEntry {
-        public string Key { get; set; } = "";
-        public string Value { get; set; } = "";
+    class GameSettingEntry : INotifyPropertyChanged {
+        private string _key = "";
+        private string _value = "";
+        private string _tooltip = "";
 
-        public string Tooltip { get; set; } = "";
+        public string Key { get => _key; set => SetProperty(ref _key, value); }
+        public string Value { 
+            get => _value; 
+            set { 
+                SetProperty(ref _value, value); 
+                OnPropertyChanged(nameof(ValueAsBool)); 
+            } 
+        }
+
+        public string Tooltip { get => _tooltip; set => SetProperty(ref _tooltip, value); }
 
         public int KeyAsInt { get { return Int32.Parse(Key); } set { Key = value.ToString(); } }
-        public bool ValueAsBool { get { return Boolean.Parse(Value); } set { Value = value.ToString().ToLower(); } }
+        public bool ValueAsBool { 
+            get => Boolean.Parse(Value);
+            set { 
+                Value = value.ToString().ToLower();
+            } 
+        }
 
         public Dictionary<string, string> ComboValues { get; set; } = new Dictionary<string, string>();
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected bool SetProperty<T>(ref T storage, T value, [CallerMemberName] string? propertyName = null) {
+            if (Equals(storage, value)) return false;
+            if (propertyName == null) return false;
+
+            storage = value;
+            OnPropertyChanged(propertyName);
+            return true;
+        }
+
+        protected virtual void OnPropertyChanged(string propertyName) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     };
 
     enum RenderingMethod {
@@ -247,6 +277,7 @@ namespace UnrealVR {
         }
 
         private DateTime lastInjectorStatusUpdate = DateTime.MinValue;
+        private DateTime lastFrontendSignal = DateTime.MinValue;
 
         private void Update_InjectorConnectionStatus() {
             var data = SharedMemory.GetData();
@@ -261,9 +292,11 @@ namespace UnrealVR {
                 m_connected = true;
                 Show_ConnectionOptions();
 
-                if (data?.signalFrontendConfigSetup == true && (now - lastInjectorStatusUpdate > oneSecond)) {
+                if (data?.signalFrontendConfigSetup == true && (now - lastFrontendSignal > oneSecond)) {
                     SharedMemory.SendCommand(SharedMemory.Command.ConfigSetupAcknowledged);
                     RefreshCurrentConfig();
+
+                    lastFrontendSignal = now;
                 }
             } else {
                 m_connectionStatus.Text = UnrealVRConnectionStatus.NoInstanceDetected;
@@ -271,7 +304,7 @@ namespace UnrealVR {
                 Hide_ConnectionOptions();
             }
 
-            lastInjectorStatusUpdate = DateTime.Now;
+            lastInjectorStatusUpdate = now;
         }
 
         private string GetGlobalDir() {

@@ -173,7 +173,7 @@
                                 <TextBox ToolTip="{Binding Tooltip}" Text="{Binding Value, Mode=TwoWay}" Width="150" TextChanged="TextChanged_Value"/>
                             </DataTemplate>
                             <DataTemplate x:Key="CheckBoxTemplate">
-                                <CheckBox ToolTip="{Binding Tooltip}" IsChecked="{Binding ValueAsBool}" Width="150" Checked="CheckChanged_Value" Unchecked="CheckChanged_Value"/>
+                                <CheckBox ToolTip="{Binding Tooltip}" IsChecked="{Binding ValueAsBool,Mode=TwoWay}" Width="150" Checked="CheckChanged_Value" Unchecked="CheckChanged_Value"/>
                             </DataTemplate>
 
                             <DataTemplate x:Key="KeyTemplate">
