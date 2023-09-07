@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Reflection;
 using Newtonsoft.Json;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace UnrealVR {
     public class ExecutableFilter {
@@ -34,9 +35,23 @@ namespace UnrealVR {
             }
         }
 
+        private string HashString(string text) {
+            using (SHA256 sha256 = SHA256.Create()) {
+                byte[] hash = sha256.ComputeHash(Encoding.UTF8.GetBytes(text));
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < hash.Length; i++) {
+                    sb.Append(hash[i].ToString("X2"));
+                }
+                return sb.ToString();
+            }
+        }
+
         public bool IsValidExecutable(string executableName) {
-            // Return true if the executable is not in the list of non-games
-            return !m_invalidExecutables.Contains(executableName.ToLower());
+            // Hash the incoming executable name
+            string hashedExecutableName = HashString(executableName);
+
+            // Return true if the hashed executable is not in the list of non-games
+            return !m_invalidExecutables.Contains(hashedExecutableName);
         }
     }
 }

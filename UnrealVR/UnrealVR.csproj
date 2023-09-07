@@ -41,4 +41,9 @@
     <Resource Include="UEVR2.png" />
   </ItemGroup>
 
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="python hash_executables.py" />
+  </Target>
+
+
 </Project>
