@@ -4,6 +4,7 @@
   "systemsettings",
   "firefox",
   "chrome",
+  "msedge",
   "calculatorapp",
   "applicationframehost",
   "wwahost",
@@ -11,6 +12,10 @@
   "textinputhost",
   "devenv",
   "steam",
+  "steamwebhelper",
   "oculusclient",
-  "vrmonitor"
+  "oculusdebugtool",
+  "vrmonitor",
+  "microsoft.media.player",
+  "microsoft.msn.weather"
 ]
