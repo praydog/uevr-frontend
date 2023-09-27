@@ -694,14 +694,13 @@ namespace UnrealVR {
             m_currentConfig = builder.Build();
             m_currentConfigPath = configPath;
 
-            RefreshConfigUI();
-
             foreach (var entry in MandatoryConfig.Entries) {
                 if (m_currentConfig.AsEnumerable().ToList().FindAll(v => v.Key == entry.Key).Count() == 0) {
                     m_currentConfig[entry.Key] = entry.Value;
-                    SaveCurrentConfig();
                 }
             }
+
+            RefreshConfigUI();
         }
 
         private void InitializeConfig(string gameName) {
