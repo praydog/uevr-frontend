@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace UnrealVR {
     class UnrealVRConnectionStatus {
-        public static string NoInstanceDetected { get { return "No UnrealVR instance detected."; } }
+        public static string NoInstanceDetected { get { return "No UEVR instance detected."; } }
         public static string Connected { get { return "Connected"; } }
     };
 }
