@@ -170,9 +170,20 @@ namespace UnrealVR {
         private string? m_currentConfigPath = null;
 
         private ExecutableFilter m_executableFilter = new ExecutableFilter();
+        private string? m_commandLineAttachExe = null;
 
         public MainWindow() {
             InitializeComponent();
+
+            // Grab the command-line arguments
+            string[] args = Environment.GetCommandLineArgs();
+
+            // Parse and handle arguments
+            foreach (string arg in args) {
+                if (arg.StartsWith("--attach=")) {
+                    m_commandLineAttachExe = arg.Split('=')[1];
+                }
+            }
         }
 
         public static bool IsAdministrator() {
@@ -232,39 +243,89 @@ namespace UnrealVR {
             Application.Current.Shutdown();
         }
 
+        private DateTime m_lastAutoInjectTime = DateTime.MinValue;
+
         private void Update_InjectStatus() {
             if (m_connected) {
                 m_injectButton.Content = "Terminate Connected Process";
                 return;
             }
 
-            if (m_lastSelectedProcessId == 0) {
-                m_injectButton.Content = "Inject";
-                return;
-            }
+            DateTime now = DateTime.Now;
+            TimeSpan oneSecond = TimeSpan.FromSeconds(1);
 
-            try {
-                var verifyProcess = Process.GetProcessById(m_lastSelectedProcessId);
+            if (m_commandLineAttachExe == null) {
+                if (m_lastSelectedProcessId == 0) {
+                    m_injectButton.Content = "Inject";
+                    return;
+                }
 
-                if (verifyProcess == null || verifyProcess.HasExited || verifyProcess.ProcessName != m_lastSelectedProcessName) {
+                try {
+                    var verifyProcess = Process.GetProcessById(m_lastSelectedProcessId);
+
+                    if (verifyProcess == null || verifyProcess.HasExited || verifyProcess.ProcessName != m_lastSelectedProcessName) {
+                        var processes = Process.GetProcessesByName(m_lastSelectedProcessName);
+
+                        if (processes == null || processes.Length == 0 || !AnyInjectableProcesses(processes)) {
+                            m_injectButton.Content = "Waiting for Process";
+                            return;
+                        }
+                    }
+
+                    m_injectButton.Content = "Inject";
+                } catch (ArgumentException) {
                     var processes = Process.GetProcessesByName(m_lastSelectedProcessName);
 
                     if (processes == null || processes.Length == 0 || !AnyInjectableProcesses(processes)) {
                         m_injectButton.Content = "Waiting for Process";
                         return;
                     }
+
+                    m_injectButton.Content = "Inject";
                 }
+            } else {
+                m_injectButton.Content = "Waiting for " + m_commandLineAttachExe.ToLower() + "...";
 
-                m_injectButton.Content = "Inject";
-            } catch (ArgumentException) {
-                var processes = Process.GetProcessesByName(m_lastSelectedProcessName);
+                var processes = Process.GetProcessesByName(m_commandLineAttachExe.ToLower().Replace(".exe", ""));
 
-                if (processes == null || processes.Length == 0 || !AnyInjectableProcesses(processes)) {
-                    m_injectButton.Content = "Waiting for Process";
+                if (processes.Count() == 0) {
                     return;
                 }
 
-                m_injectButton.Content = "Inject";
+                Process? process = null;
+
+                foreach (Process p in processes) {
+                    if (IsInjectableProcess(p)) {
+                        m_lastSelectedProcessId = p.Id;
+                        m_lastSelectedProcessName = p.ProcessName;
+                        process = p;
+                    }
+                }
+
+                if (process == null) {
+                    return;
+                }
+
+                if (now - m_lastAutoInjectTime > oneSecond) {
+                    string runtimeName;
+
+                    if (m_openvrRadio.IsChecked == true) {
+                        runtimeName = "openvr_api.dll";
+                    } else if (m_openxrRadio.IsChecked == true) {
+                        runtimeName = "openxr_loader.dll";
+                    } else {
+                        runtimeName = "openvr_api.dll";
+                    }
+
+                    if (Injector.InjectDll(process.Id, runtimeName)) {
+                        InitializeConfig(process.ProcessName);
+                        Injector.InjectDll(process.Id, "UnrealVRBackend.dll");
+                    }
+
+                    m_lastAutoInjectTime = now;
+                    m_commandLineAttachExe = null; // no need anymore.
+                    FillProcessList();
+                }
             }
         }
 
