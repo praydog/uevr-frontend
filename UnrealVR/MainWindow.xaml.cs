@@ -360,6 +360,13 @@ namespace UnrealVR {
                     lastFrontendSignal = now;
                 }
             } else {
+                if (m_connected && !string.IsNullOrEmpty(m_commandLineAttachExe))
+                {
+                    // If we launched with an attached game exe, we shut ourselves down once that game closes.
+                    Application.Current.Shutdown();
+                    return;
+                }
+                
                 m_connectionStatus.Text = UnrealVRConnectionStatus.NoInstanceDetected;
                 m_connected = false;
                 Hide_ConnectionOptions();
