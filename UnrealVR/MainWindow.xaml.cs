@@ -583,6 +583,28 @@ namespace UnrealVR {
             return null;
         }
 
+        private bool IsUnrealEngineGame(string gameDirectory, string targetName) {
+            if (targetName.ToLower().EndsWith("-win64-shipping")) { 
+                return true; 
+            }
+
+            // Check if going up the parent directories reveals the directory "\Engine\Binaries\ThirdParty".
+            var parentPath = gameDirectory;
+            for (int i = 0; i < 10; ++i) {  // Limit the number of directories to move up to prevent endless loops.
+                parentPath = System.IO.Path.GetDirectoryName(parentPath);
+
+                if (parentPath == null) {
+                    return false;
+                }
+
+                if (Directory.Exists(parentPath + "\\Engine\\Binaries\\ThirdParty")) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private string IniToString(IConfiguration config) {
             string result = "";
 
@@ -778,6 +800,8 @@ namespace UnrealVR {
             InitializeConfig_FromPath(configPath);
         }
 
+        private bool m_isFirstProcessFill = true;
+
         private void ComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             //ComboBoxItem comboBoxItem = ((sender as ComboBox).SelectedItem as ComboBoxItem);
 
@@ -827,6 +851,10 @@ namespace UnrealVR {
 
                             m_iniListView.ItemsSource = null; // Because we are switching processes.
                             InitializeConfig(p.ProcessName);
+
+                            if (!IsUnrealEngineGame(gameDirectory, m_lastSelectedProcessName) && !m_isFirstProcessFill) {
+                                MessageBox.Show("Warning: " + m_lastSelectedProcessName + " does not appear to be an Unreal Engine title");
+                            }
                         }
 
                         m_lastDefaultProcessListName = GenerateProcessName(p);
@@ -843,6 +871,8 @@ namespace UnrealVR {
 
             FillProcessList();
             Update_InjectStatus();
+
+            m_isFirstProcessFill = false;
         }
 
         private void Donate_Clicked(object sender, RoutedEventArgs e) {
