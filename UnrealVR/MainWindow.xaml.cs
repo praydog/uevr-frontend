@@ -584,22 +584,34 @@ namespace UnrealVR {
         }
 
         private bool IsUnrealEngineGame(string gameDirectory, string targetName) {
-            if (targetName.ToLower().EndsWith("-win64-shipping")) { 
-                return true; 
-            }
-
-            // Check if going up the parent directories reveals the directory "\Engine\Binaries\ThirdParty".
-            var parentPath = gameDirectory;
-            for (int i = 0; i < 10; ++i) {  // Limit the number of directories to move up to prevent endless loops.
-                parentPath = System.IO.Path.GetDirectoryName(parentPath);
-
-                if (parentPath == null) {
-                    return false;
-                }
-
-                if (Directory.Exists(parentPath + "\\Engine\\Binaries\\ThirdParty")) {
+            try {
+                if (targetName.ToLower().EndsWith("-win64-shipping")) {
                     return true;
                 }
+
+                if (targetName.ToLower().EndsWith("-wingdk-shipping")) {
+                    return true;
+                }
+
+                // Check if going up the parent directories reveals the directory "\Engine\Binaries\ThirdParty".
+                var parentPath = gameDirectory;
+                for (int i = 0; i < 10; ++i) {  // Limit the number of directories to move up to prevent endless loops.
+                    if (parentPath == null) {
+                        return false;
+                    }
+
+                    if (Directory.Exists(parentPath + "\\Engine\\Binaries\\ThirdParty")) {
+                        return true;
+                    }
+
+                    if (Directory.Exists(parentPath + "\\Engine\\Binaries\\Win64")) {
+                        return true;
+                    }
+
+                    parentPath = System.IO.Path.GetDirectoryName(parentPath);
+                }
+            } catch (Exception ex) {
+                Console.WriteLine($"Exception caught: {ex}");
             }
 
             return false;
