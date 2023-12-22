@@ -514,7 +514,7 @@ namespace UnrealVR {
 
             if (IsExecutableRunning("VirtualDesktop.Streamer")) {
                 m_virtualDesktopWarned = true;
-                MessageBox.Show("Virtual Desktop has been detected running.\nMake sure you use OpenXR for the least issues.\nSteamVR must already be started.", "VD Warning", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Virtual Desktop has been detected running.\nMake sure you use OpenXR for the least issues.", "VD Warning", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
