@@ -507,8 +507,8 @@ namespace UnrealVR {
 
         private bool m_virtualDesktopWarned = false;
         private bool m_virtualDesktopChecked = false;
-        private void Check_VirtualDesktop(bool checkWarn = false) {
-            if (checkWarn && m_virtualDesktopWarned) {
+        private void Check_VirtualDesktop() {
+            if (m_virtualDesktopWarned) {
                 return;
             }
 
@@ -859,7 +859,7 @@ namespace UnrealVR {
                                 };
                             }
 
-                            Check_VirtualDesktop(true);
+                            Check_VirtualDesktop();
 
                             m_iniListView.ItemsSource = null; // Because we are switching processes.
                             InitializeConfig(p.ProcessName);
