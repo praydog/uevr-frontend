@@ -171,6 +171,7 @@ namespace UnrealVR {
 
         private ExecutableFilter m_executableFilter = new ExecutableFilter();
         private string? m_commandLineAttachExe = null;
+        private bool m_ignoreFutureVDWarnings = false;
 
         public MainWindow() {
             InitializeComponent();
@@ -202,6 +203,7 @@ namespace UnrealVR {
             m_openvrRadio.IsChecked = m_mainWindowSettings.OpenVRRadio;
             m_openxrRadio.IsChecked = m_mainWindowSettings.OpenXRRadio;
             m_nullifyVRPluginsCheckbox.IsChecked = m_mainWindowSettings.NullifyVRPluginsCheckbox;
+            m_ignoreFutureVDWarnings = m_mainWindowSettings.IgnoreFutureVDWarnings;
 
             m_updateTimer.Tick += (sender, e) => Dispatcher.Invoke(MainWindow_Update);
             m_updateTimer.Start();
@@ -508,13 +510,20 @@ namespace UnrealVR {
         private bool m_virtualDesktopWarned = false;
         private bool m_virtualDesktopChecked = false;
         private void Check_VirtualDesktop() {
-            if (m_virtualDesktopWarned) {
+            if (m_virtualDesktopWarned || m_ignoreFutureVDWarnings) {
                 return;
             }
 
             if (IsExecutableRunning("VirtualDesktop.Streamer")) {
                 m_virtualDesktopWarned = true;
-                MessageBox.Show("Virtual Desktop has been detected running.\nMake sure you use OpenXR for the least issues.", "VD Warning", MessageBoxButton.OK, MessageBoxImage.Information);
+                var dialog = new VDWarnDialog();
+                dialog.ShowDialog();
+
+                if (dialog.DialogResultOK) {
+                    if (dialog.HideFutureWarnings) {
+                        m_ignoreFutureVDWarnings = true;
+                    }
+                }
             }
         }
 
@@ -532,6 +541,7 @@ namespace UnrealVR {
             m_mainWindowSettings.OpenXRRadio = m_openxrRadio.IsChecked == true;
             m_mainWindowSettings.OpenVRRadio = m_openvrRadio.IsChecked == true;
             m_mainWindowSettings.NullifyVRPluginsCheckbox = m_nullifyVRPluginsCheckbox.IsChecked == true;
+            m_mainWindowSettings.IgnoreFutureVDWarnings = m_ignoreFutureVDWarnings;
 
             m_mainWindowSettings.Save();
         }

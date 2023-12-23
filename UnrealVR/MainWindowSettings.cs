@@ -27,5 +27,12 @@ namespace UnrealVR {
             get { return (bool)this["NullifyVRPluginsCheckbox"]; }
             set { this["NullifyVRPluginsCheckbox"] = value; }
         }
+
+        [UserScopedSettingAttribute()]
+        [DefaultSettingValueAttribute("false")]
+        public bool IgnoreFutureVDWarnings {
+            get { return (bool)this["IgnoreFutureVDWarnings"]; }
+            set { this["IgnoreFutureVDWarnings"] = value; }
+        }
     }
 }

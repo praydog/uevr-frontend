@@ -1,0 +1,25 @@
+<Window x:Class="UnrealVR.VDWarnDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:UnrealVR"
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="Auto"
+        FontFamily="{DynamicResource MaterialDesignFont}"
+        Background="#FF1A1B1C"
+        SizeToContent="WidthAndHeight" ResizeMode="NoResize" Icon="/UEVR2.png"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        Title="VD Warning" Height="200" Width="400">
+    <StackPanel>
+        <TextBlock Text="Virtual Desktop has been detected running.&#x0a;Make sure you use OpenXR for the least issues." Margin="10" />
+        <CheckBox x:Name="chkHideWarning" Content="Hide future warnings" Margin="10" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="10">
+            <Button x:Name="btnOK" Content="OK" Width="75" Margin="5" Click="btnOK_Click" />
+        </StackPanel>
+    </StackPanel>
+</Window>
