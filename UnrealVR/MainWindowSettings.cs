@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UnrealVR {
+namespace UEVR {
     sealed class MainWindowSettings : ApplicationSettingsBase {
         [UserScopedSettingAttribute()]
         [DefaultSettingValueAttribute("false")]

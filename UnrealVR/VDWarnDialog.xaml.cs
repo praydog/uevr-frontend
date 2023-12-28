@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
-namespace UnrealVR {
+namespace UEVR {
     public partial class VDWarnDialog : Window {
         public bool HideFutureWarnings { get; private set; }
         public bool DialogResultOK { get; private set; }

@@ -3,11 +3,15 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net6.0-windows</TargetFramework>
-    <RootNamespace>UnrealVR</RootNamespace>
+    <RootNamespace>UEVR</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>uevr.ico</ApplicationIcon>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Product>$(AssemblyName)</Product>
+    <Authors>praydog</Authors>
+    <AssemblyName>UEVRInjector</AssemblyName>
+    <PackageProjectUrl>https://github.com/praydog/uevr-frontend</PackageProjectUrl>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -50,6 +54,14 @@
     <Exec Command="python hash_executables.py" />
   </Target>
 
+  <ItemGroup>
+    <Compile Update="Properties\Settings.Designer.cs">
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
     <ItemGroup>
       <None Update="bundled\openvr_api.dll">
         <Link>openvr_api.dll</Link>
@@ -58,6 +70,10 @@
       <None Update="bundled\openxr_loader.dll">
         <Link>openxr_loader.dll</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="Properties\Settings.settings">
+        <Generator>SettingsSingleFileGenerator</Generator>
+        <LastGenOutput>Settings.Designer.cs</LastGenOutput>
       </None>
     </ItemGroup>
 

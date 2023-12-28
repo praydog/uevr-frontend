@@ -8,7 +8,7 @@ using System.Windows;
 using Microsoft.Win32;
 using System.IO;
 
-namespace UnrealVR {
+namespace UEVR {
     public class GameConfig {
         // https://stackoverflow.com/questions/19395128/c-sharp-zipfile-createfromdirectory-the-process-cannot-access-the-file-path-t
         public static void CreateZipFromDirectory(string sourceDirectoryName, string destinationArchiveFileName) {

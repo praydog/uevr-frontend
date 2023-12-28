@@ -28,11 +28,11 @@ using System.Threading;
 using Microsoft.Extensions.Configuration.Ini;
 using Microsoft.Extensions.Configuration;
 using System.ComponentModel;
-using static UnrealVR.SharedMemory;
+using static UEVR.SharedMemory;
 using System.Threading.Channels;
 using System.Security.Principal;
 
-namespace UnrealVR {
+namespace UEVR {
     class GameSettingEntry : INotifyPropertyChanged {
         private string _key = "";
         private string _value = "";
@@ -321,7 +321,7 @@ namespace UnrealVR {
 
                     if (Injector.InjectDll(process.Id, runtimeName)) {
                         InitializeConfig(process.ProcessName);
-                        Injector.InjectDll(process.Id, "UnrealVRBackend.dll");
+                        Injector.InjectDll(process.Id, "UEVRBackend.dll");
                     }
 
                     m_lastAutoInjectTime = now;
@@ -348,7 +348,7 @@ namespace UnrealVR {
             TimeSpan oneSecond = TimeSpan.FromSeconds(1);
 
             if (data != null) {
-                m_connectionStatus.Text = UnrealVRConnectionStatus.Connected;
+                m_connectionStatus.Text = UEVRConnectionStatus.Connected;
                 m_connectionStatus.Text += ": " + data?.path;
                 m_connectionStatus.Text += "\nThread ID: " + data?.mainThreadId.ToString();
                 m_lastSharedData = data;
@@ -369,7 +369,7 @@ namespace UnrealVR {
                     return;
                 }
                 
-                m_connectionStatus.Text = UnrealVRConnectionStatus.NoInstanceDetected;
+                m_connectionStatus.Text = UEVRConnectionStatus.NoInstanceDetected;
                 m_connected = false;
                 Hide_ConnectionOptions();
             }
@@ -984,8 +984,8 @@ namespace UnrealVR {
 
             if (m_nullifyVRPluginsCheckbox.IsChecked == true) {
                 IntPtr nullifierBase;
-                if (Injector.InjectDll(process.Id, "UnrealVRPluginNullifier.dll", out nullifierBase) && nullifierBase.ToInt64() > 0) {
-                    if (!Injector.CallFunctionNoArgs(process.Id, "UnrealVRPluginNullifier.dll", nullifierBase, "nullify", true)) {
+                if (Injector.InjectDll(process.Id, "UEVRPluginNullifier.dll", out nullifierBase) && nullifierBase.ToInt64() > 0) {
+                    if (!Injector.CallFunctionNoArgs(process.Id, "UEVRPluginNullifier.dll", nullifierBase, "nullify", true)) {
                         MessageBox.Show("Failed to nullify VR plugins.");
                     }
                 } else {
@@ -994,7 +994,7 @@ namespace UnrealVR {
             }
 
             if (Injector.InjectDll(process.Id, runtimeName)) {
-                Injector.InjectDll(process.Id, "UnrealVRBackend.dll");
+                Injector.InjectDll(process.Id, "UEVRBackend.dll");
             }
         }
 

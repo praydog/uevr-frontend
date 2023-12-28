@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Diagnostics;
 
-namespace UnrealVR {
+namespace UEVR {
     class Injector {
         [DllImport("kernel32.dll")]
         public static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);

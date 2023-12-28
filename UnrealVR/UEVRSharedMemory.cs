@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace UnrealVR {
+namespace UEVR {
     enum WM { USER = 0x400 }
 
 

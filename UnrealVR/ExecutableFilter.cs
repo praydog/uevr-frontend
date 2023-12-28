@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Security.Cryptography;
 
-namespace UnrealVR {
+namespace UEVR {
     public class ExecutableFilter {
         private HashSet<string> m_invalidExecutables = new HashSet<string>();
 
@@ -21,7 +21,7 @@ namespace UnrealVR {
 
         private List<string>? LoadFilterList() {
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "UnrealVR.FilteredExecutables.json";
+            var resourceName = "UEVR.FilteredExecutables.json";
 
             using (Stream? stream = assembly.GetManifestResourceStream(resourceName)) {
                 if (stream == null) {
