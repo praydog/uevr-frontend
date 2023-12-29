@@ -14,11 +14,11 @@ jobs:
 
       - name: Compress release
         run: |
-          7z a ${{github.workspace}}/ActionsRelease.zip ${{github.workspace}}/UnrealVR/bin/Release/net6.0-windows/*.*
+          7z a ${{github.workspace}}/ActionsRelease.zip ${{github.workspace}}/UEVR/bin/Release/net6.0-windows/*.*
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: UnrealVR
+          name: UEVR
           path: ${{github.workspace}}/ActionsRelease.zip
           if-no-files-found: error
