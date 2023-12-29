@@ -908,7 +908,7 @@ namespace UEVR {
             Process.Start(new ProcessStartInfo("http://flat2vr.com") { UseShellExecute = true });
         }
         private void GitHub_Clicked(object sender, RoutedEventArgs e) {
-            Process.Start(new ProcessStartInfo("https://github.com/praydog/") { UseShellExecute = true });
+            Process.Start(new ProcessStartInfo("https://github.com/praydog/UEVR") { UseShellExecute = true });
         }
 
         private void Inject_Clicked(object sender, RoutedEventArgs e) {
