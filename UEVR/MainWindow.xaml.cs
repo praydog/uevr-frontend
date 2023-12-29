@@ -496,8 +496,16 @@ namespace UEVR {
                     Directory.CreateDirectory(gameGlobalDir);
                 }
 
-                GameConfig.ExtractZipToDirectory(importPath, gameGlobalDir);
-                NavigateToDirectory(gameGlobalDir);
+                var finalGameName = GameConfig.ExtractZipToDirectory(importPath, gameGlobalDir, gameName);
+
+                if (finalGameName == null) {
+                    MessageBox.Show("Failed to extract the ZIP file.");
+                    return;
+                }
+
+                var finalDirectory = System.IO.Path.Combine(globalDir, finalGameName);
+                NavigateToDirectory(finalDirectory);
+
 
                 if (m_connected) {
                     SharedMemory.SendCommand(SharedMemory.Command.ReloadConfig);

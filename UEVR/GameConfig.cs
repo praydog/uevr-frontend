@@ -62,11 +62,28 @@ namespace UEVR {
             return fullPath.Substring(basePath.Length);
         }
 
-        public static void ExtractZipToDirectory(string sourceArchiveFileName, string destinationDirectoryName) {
+        public static string? ExtractZipToDirectory(string sourceArchiveFileName, string destinationDirectoryName, string gameName) {
             try {
                 ZipFile.ExtractToDirectory(sourceArchiveFileName, destinationDirectoryName, overwriteFiles: true);
+
+                var extractedFiles = Directory.GetFiles(destinationDirectoryName);
+                if (extractedFiles.Length == 1 && Path.GetExtension(extractedFiles[0]).Equals(".zip", StringComparison.OrdinalIgnoreCase)) {
+                    string nestedZipFile = extractedFiles[0];
+                    string nestedZipName = Path.GetFileNameWithoutExtension(nestedZipFile);
+
+                    string nestedDestination = Path.Combine(destinationDirectoryName, "..", nestedZipName);
+                    Directory.CreateDirectory(nestedDestination); // Ensure the directory is created
+
+                    ZipFile.ExtractToDirectory(nestedZipFile, nestedDestination, overwriteFiles: true);
+                    File.Delete(nestedZipFile); // Optionally delete the nested zip file after extraction
+
+                    return nestedZipName; // Return the name of the nested zip
+                }
+
+                return gameName; // Return the original game name if no nested zip
             } catch (Exception ex) {
                 MessageBox.Show("An error occurred: " + ex.Message);
+                return null; // Return null in case of an error
             }
         }
 
