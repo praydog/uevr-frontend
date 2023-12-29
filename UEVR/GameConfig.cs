@@ -64,26 +64,53 @@ namespace UEVR {
 
         public static string? ExtractZipToDirectory(string sourceArchiveFileName, string destinationDirectoryName, string gameName) {
             try {
-                ZipFile.ExtractToDirectory(sourceArchiveFileName, destinationDirectoryName, overwriteFiles: true);
+                string tempExtractionPath = Path.Combine(destinationDirectoryName, "temp_extraction");
+                Directory.CreateDirectory(tempExtractionPath);
 
-                var extractedFiles = Directory.GetFiles(destinationDirectoryName);
-                if (extractedFiles.Length == 1 && Path.GetExtension(extractedFiles[0]).Equals(".zip", StringComparison.OrdinalIgnoreCase)) {
-                    string nestedZipFile = extractedFiles[0];
-                    string nestedZipName = Path.GetFileNameWithoutExtension(nestedZipFile);
+                ZipFile.ExtractToDirectory(sourceArchiveFileName, tempExtractionPath, overwriteFiles: true);
 
-                    string nestedDestination = Path.Combine(destinationDirectoryName, "..", nestedZipName);
-                    Directory.CreateDirectory(nestedDestination); // Ensure the directory is created
+                var extractedEntries = Directory.GetFileSystemEntries(tempExtractionPath);
+                if (extractedEntries.Length == 1) {
+                    var singleEntry = extractedEntries[0];
 
-                    ZipFile.ExtractToDirectory(nestedZipFile, nestedDestination, overwriteFiles: true);
-                    File.Delete(nestedZipFile); // Optionally delete the nested zip file after extraction
+                    // Check if the single entry is a zip file
+                    if (File.Exists(singleEntry) && Path.GetExtension(singleEntry).Equals(".zip", StringComparison.OrdinalIgnoreCase)) {
+                        string nestedZipName = Path.GetFileNameWithoutExtension(singleEntry);
+                        string nestedDestination = Path.Combine(destinationDirectoryName, "..", nestedZipName);
+                        Directory.CreateDirectory(nestedDestination);
 
-                    return nestedZipName; // Return the name of the nested zip
+                        ZipFile.ExtractToDirectory(singleEntry, nestedDestination, overwriteFiles: true);
+                        File.Delete(singleEntry);
+
+                        Directory.Delete(tempExtractionPath, true);
+                        return nestedZipName;
+                    }
+
+                    // Check if the single entry is a directory with a matching name
+                    if (Directory.Exists(singleEntry) && Path.GetFileName(singleEntry).Equals(gameName, StringComparison.OrdinalIgnoreCase)) {
+                        MoveDirectoryContents(singleEntry, destinationDirectoryName);
+                        Directory.Delete(tempExtractionPath, true);
+                        return gameName;
+                    }
                 }
 
-                return gameName; // Return the original game name if no nested zip
+                // Move extracted files from temp directory to final destination
+                MoveDirectoryContents(tempExtractionPath, destinationDirectoryName);
+                Directory.Delete(tempExtractionPath, true);
+                return gameName;
             } catch (Exception ex) {
                 MessageBox.Show("An error occurred: " + ex.Message);
-                return null; // Return null in case of an error
+                return null;
+            }
+        }
+
+        private static void MoveDirectoryContents(string sourceDir, string destinationDir) {
+            foreach (var dirPath in Directory.GetDirectories(sourceDir, "*", SearchOption.AllDirectories)) {
+                Directory.CreateDirectory(dirPath.Replace(sourceDir, destinationDir));
+            }
+
+            foreach (var newPath in Directory.GetFiles(sourceDir, "*.*", SearchOption.AllDirectories)) {
+                File.Copy(newPath, newPath.Replace(sourceDir, destinationDir), true);
             }
         }
 
