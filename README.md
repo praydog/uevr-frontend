@@ -1,3 +1,3 @@
-# UnrealVR.Frontend
+# UEVR.Frontend
 
-The frontend injector for the Unreal VR mod. Does not contain the actual mod itself.
+The frontend injector for the UEVR mod. Does not contain the actual mod itself.
