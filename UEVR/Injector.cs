@@ -52,10 +52,10 @@ namespace UEVR {
             }
 
             // Get the address of the LoadLibrary function
-            IntPtr loadLibraryAddress = GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
+            IntPtr loadLibraryAddress = GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryW");
 
             if (loadLibraryAddress == IntPtr.Zero) {
-                MessageBox.Show("Could not obtain LoadLibraryA address in the target process.");
+                MessageBox.Show("Could not obtain LoadLibraryW address in the target process.");
                 return false;
             }
 
@@ -67,10 +67,10 @@ namespace UEVR {
                 return false;
             }
 
-            // Write the DLL path to the allocated memory
+            // Write the DLL path in UTF-16
             int bytesWritten = 0;
-            var bytes = Encoding.ASCII.GetBytes(fullPath);
-            WriteProcessMemory(processHandle, dllPathAddress, bytes, (uint)fullPath.Length, out bytesWritten);
+            var bytes = Encoding.Unicode.GetBytes(fullPath);
+            WriteProcessMemory(processHandle, dllPathAddress, bytes, (uint)(fullPath.Length * 2), out bytesWritten);
 
             // Create a remote thread in the target process that calls LoadLibrary with the DLL path
             IntPtr threadHandle = CreateRemoteThread(processHandle, IntPtr.Zero, 0, loadLibraryAddress, dllPathAddress, 0, IntPtr.Zero);
