@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Diagnostics;
+using System.Reflection;
 
 namespace UEVR {
     class Injector {
@@ -38,7 +39,21 @@ namespace UEVR {
         public static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 
         // Inject the DLL into the target process
+        // dllPath is local filename, relative to EXE.
         public static bool InjectDll(int processId, string dllPath, out IntPtr dllBase) {
+            try {
+                var exeDirectory = AppContext.BaseDirectory;
+
+                if (exeDirectory != null) {
+                    var newPath = Path.Combine(exeDirectory, dllPath);
+
+                    if (System.IO.File.Exists(newPath)) {
+                        dllPath = Path.Combine(exeDirectory, dllPath);
+                    }
+                }
+            } catch (Exception) {
+            }
+
             dllBase = IntPtr.Zero;
 
             string fullPath = Path.GetFullPath(dllPath);
