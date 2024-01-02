@@ -102,13 +102,14 @@ namespace UEVR {
             // Get base of DLL that was just injected
             if (p != null) try {
                 foreach (ProcessModule module in p.Modules) {
-                    if (module.FileName == fullPath) {
+                    if (module.FileName != null && module.FileName == fullPath) {
                         dllBase = module.BaseAddress;
                         break;
                     }
                 }
             } catch (Exception ex) {
                 Console.WriteLine($"Exception caught: {ex}");
+                MessageBox.Show($"Exception while injecting: {ex}");
             }
 
             return true;
