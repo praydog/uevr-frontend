@@ -41,6 +41,8 @@ namespace UEVR {
         // Inject the DLL into the target process
         // dllPath is local filename, relative to EXE.
         public static bool InjectDll(int processId, string dllPath, out IntPtr dllBase) {
+            string originalPath = dllPath;
+
             try {
                 var exeDirectory = AppContext.BaseDirectory;
 
@@ -52,6 +54,10 @@ namespace UEVR {
                     }
                 }
             } catch (Exception) {
+            }
+
+            if (!System.IO.File.Exists(dllPath)) {
+                MessageBox.Show($"{originalPath} does not appear to exist! Check if any anti-virus software has deleted the file. Reinstall UEVR if necessary.");
             }
 
             dllBase = IntPtr.Zero;
