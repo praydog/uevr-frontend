@@ -1167,7 +1167,7 @@ namespace UEVR {
 
         bool skipAlertMessages = false;
 
-        internal void AttachToProcess(LaunchArguments arguments) {
+        internal void AttachToProcess(AppArguments arguments) {
             var executableDirectory = System.IO.Path.GetDirectoryName(arguments.Executable);
 
             skipAlertMessages = true;

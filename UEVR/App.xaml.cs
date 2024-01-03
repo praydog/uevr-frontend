@@ -4,7 +4,10 @@ using System.Windows;
 
 namespace UEVR
 {
-    class LaunchArguments
+    /// <summary>
+    /// Parsed executable arguments to use executing any game process 
+    /// </summary>
+    internal class AppArguments
     {
         public string Executable { get; set; }
         public string Arguments { get; set; }
@@ -17,10 +20,13 @@ namespace UEVR
     /// </summary>
     public partial class App : Application
     {
-        private static LaunchArguments GetLaunchArguments(string[] args)
+        private static AppArguments GetAppArguments(string[] args)
         {
-            Dictionary<string, string> argumentos = new Dictionary<string, string>();
-            var result = new LaunchArguments();
+            if (args.Length == 0) {
+                return null;
+            }
+
+            var result = new AppArguments();
             foreach (string arg in args)
             {
                 // Dividir cada argumento en clave y valor
@@ -54,7 +60,7 @@ namespace UEVR
             MainWindow wnd = new();
             wnd.Show();
 
-            var arguments = GetLaunchArguments(e.Args);
+            var arguments = GetAppArguments(e.Args);
             if (arguments != null)
             {
                 wnd.AttachToProcess(arguments);
