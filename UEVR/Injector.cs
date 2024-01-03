@@ -57,7 +57,7 @@ namespace UEVR {
             }
 
             if (!System.IO.File.Exists(dllPath)) {
-                MessageBox.Show($"{originalPath} does not appear to exist! Check if any anti-virus software has deleted the file. Reinstall UEVR if necessary.");
+                MessageBox.Show($"{originalPath} does not appear to exist! Check if any anti-virus software has deleted the file. Reinstall UEVR if necessary.\n\nBaseDirectory: {AppContext.BaseDirectory}");
             }
 
             dllBase = IntPtr.Zero;
