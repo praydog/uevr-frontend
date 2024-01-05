@@ -332,6 +332,19 @@ namespace UEVR {
 
                     if (Injector.InjectDll(process.Id, runtimeName)) {
                         InitializeConfig(process.ProcessName);
+
+                        try {
+                            if (m_currentConfig != null) {
+                                if (m_currentConfig["Frontend_RequestedRuntime"] != runtimeName) {
+                                    m_currentConfig["Frontend_RequestedRuntime"] = runtimeName;
+                                    RefreshConfigUI();
+                                    SaveCurrentConfig();
+                                }
+                            }
+                        } catch (Exception) {
+
+                        }
+
                         Injector.InjectDll(process.Id, "UEVRBackend.dll");
                     }
 
@@ -1013,6 +1026,18 @@ namespace UEVR {
             }
 
             if (Injector.InjectDll(process.Id, runtimeName)) {
+                try {
+                    if (m_currentConfig != null) {
+                        if (m_currentConfig["Frontend_RequestedRuntime"] != runtimeName) {
+                            m_currentConfig["Frontend_RequestedRuntime"] = runtimeName;
+                            RefreshConfigUI();
+                            SaveCurrentConfig();
+                        }
+                    }
+                } catch (Exception) {
+
+                }
+
                 Injector.InjectDll(process.Id, "UEVRBackend.dll");
             }
         }
