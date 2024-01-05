@@ -309,6 +309,17 @@ namespace UEVR {
                 }
 
                 if (now - m_lastAutoInjectTime > oneSecond) {
+                    if (m_nullifyVRPluginsCheckbox.IsChecked == true) {
+                        IntPtr nullifierBase;
+                        if (Injector.InjectDll(process.Id, "UEVRPluginNullifier.dll", out nullifierBase) && nullifierBase.ToInt64() > 0) {
+                            if (!Injector.CallFunctionNoArgs(process.Id, "UEVRPluginNullifier.dll", nullifierBase, "nullify", true)) {
+                                //MessageBox.Show("Failed to nullify VR plugins.");
+                            }
+                        } else {
+                            //MessageBox.Show("Failed to inject plugin nullifier.");
+                        }
+                    }
+
                     string runtimeName;
 
                     if (m_openvrRadio.IsChecked == true) {
