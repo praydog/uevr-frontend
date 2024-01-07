@@ -1,0 +1,24 @@
+name: Build
+
+on: [pull_request, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+      - run: dotnet publish --configuration Release -r win-x64 --self-contained true
+
+      - name: Compress release
+        run: |
+          7z a ${{github.workspace}}/ActionsRelease.zip ${{github.workspace}}/UEVR/bin/Release/net6.0-windows/win-x64/publish/*.*
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: UEVR
+          path: ${{github.workspace}}/ActionsRelease.zip
+          if-no-files-found: error
