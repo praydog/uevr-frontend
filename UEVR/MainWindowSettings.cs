@@ -34,5 +34,13 @@ namespace UEVR {
             get { return (bool)this["IgnoreFutureVDWarnings"]; }
             set { this["IgnoreFutureVDWarnings"] = value; }
         }
+
+        [UserScopedSettingAttribute()]
+        [DefaultSettingValueAttribute("true")]
+        public bool FocusGameOnInjection
+        {
+            get { return (bool)this["FocusGameOnInjection"]; }
+            set { this["FocusGameOnInjection"] = value; }
+        }
     }
 }
