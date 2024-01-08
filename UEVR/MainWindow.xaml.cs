@@ -539,6 +539,8 @@ namespace UEVR {
                 var finalDirectory = System.IO.Path.Combine(globalDir, finalGameName);
                 NavigateToDirectory(finalDirectory);
 
+                RefreshCurrentConfig();
+
 
                 if (m_connected) {
                     SharedMemory.SendCommand(SharedMemory.Command.ReloadConfig);
