@@ -45,7 +45,7 @@ namespace UEVR {
 
             // Recursively process subdirectories
             foreach (DirectoryInfo subDi in di.GetDirectories()) {
-                if (subDi.Name.Equals("plugins", StringComparison.OrdinalIgnoreCase)) {
+                if (subDi.Name.Equals("plugins", StringComparison.OrdinalIgnoreCase) || subDi.Name.Equals("sdkdump", StringComparison.OrdinalIgnoreCase)) {
                     continue;
                 }
 
