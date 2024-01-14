@@ -173,6 +173,7 @@ namespace UEVR {
         private ExecutableFilter m_executableFilter = new ExecutableFilter();
         private string? m_commandLineAttachExe = null;
         private string? m_commandLineLaunchExe = null;
+        private int m_commandLineDelayInjection = 0;
         private bool m_ignoreFutureVDWarnings = false;
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]
@@ -192,6 +193,16 @@ namespace UEVR {
                 }
                 if (arg.StartsWith("--launch=")) {
                     m_commandLineLaunchExe = arg.Substring(arg.IndexOf('=') + 1); // game exe URI may contain any characters including '='
+                    continue;
+                }
+                if (arg.StartsWith("--delay=")) {
+                    try {
+                        m_commandLineDelayInjection = int.Parse(arg.Split('=')[1]);
+                    }
+                    catch {
+                        m_commandLineDelayInjection = 0;
+                    }
+
                     continue;
                 }
             }
@@ -258,6 +269,7 @@ namespace UEVR {
 
         private DateTime m_lastAutoInjectTime = DateTime.MinValue;
         private bool m_launchExeDone = false;
+        private int? m_delayInjectionTimer = null;
 
         private void Update_InjectStatus() {
             if (m_connected) {
@@ -335,6 +347,16 @@ namespace UEVR {
                     return;
                 }
 
+                if (m_commandLineDelayInjection > 0) {
+                    if (m_delayInjectionTimer == null) {
+                        m_delayInjectionTimer = m_commandLineDelayInjection;
+                    }
+
+                    m_injectButton.Content = m_commandLineAttachExe.ToLower() + " found. Delaying " + m_delayInjectionTimer + "s";
+                    m_delayInjectionTimer--;
+                    if (m_delayInjectionTimer > 0) return;
+                }
+
                 if (now - m_lastAutoInjectTime > oneSecond) {
                     if (m_nullifyVRPluginsCheckbox.IsChecked == true) {
                         IntPtr nullifierBase;
@@ -377,6 +399,8 @@ namespace UEVR {
 
                     m_lastAutoInjectTime = now;
                     m_commandLineAttachExe = null; // no need anymore.
+                    m_delayInjectionTimer = null;
+                    m_commandLineDelayInjection = 0;
                     FillProcessList();
                     if (m_focusGameOnInjectionCheckbox.IsChecked == true)
                     {
