@@ -172,6 +172,7 @@ namespace UEVR {
 
         private ExecutableFilter m_executableFilter = new ExecutableFilter();
         private string? m_commandLineAttachExe = null;
+        private string? m_commandLineLaunchExe = null;
         private bool m_ignoreFutureVDWarnings = false;
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]
@@ -187,6 +188,11 @@ namespace UEVR {
             foreach (string arg in args) {
                 if (arg.StartsWith("--attach=")) {
                     m_commandLineAttachExe = arg.Split('=')[1];
+                    continue;
+                }
+                if (arg.StartsWith("--launch=")) {
+                    m_commandLineLaunchExe = arg.Substring(arg.IndexOf('=') + 1); // game exe URI may contain any characters including '='
+                    continue;
                 }
             }
         }
@@ -251,6 +257,7 @@ namespace UEVR {
         }
 
         private DateTime m_lastAutoInjectTime = DateTime.MinValue;
+        private bool m_launchExeDone = false;
 
         private void Update_InjectStatus() {
             if (m_connected) {
@@ -260,6 +267,21 @@ namespace UEVR {
 
             DateTime now = DateTime.Now;
             TimeSpan oneSecond = TimeSpan.FromSeconds(1);
+
+            if (m_commandLineLaunchExe != null && !m_launchExeDone) {
+                try {
+                    Process.Start(new ProcessStartInfo {
+                        FileName = m_commandLineLaunchExe,
+                        UseShellExecute = true // for launcher compatiblity, executable might be an URI
+                    });
+
+                    m_launchExeDone = true;
+                }
+                catch (Exception) {
+                    MessageBox.Show("Failed to launch: " + m_commandLineLaunchExe, "Launch error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Application.Current.Dispatcher.Invoke(new Action(() => { Application.Current.Shutdown(1); }));
+                }
+            }
 
             if (m_commandLineAttachExe == null) {
                 if (m_lastSelectedProcessId == 0) {
