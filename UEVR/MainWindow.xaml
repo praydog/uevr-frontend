@@ -45,14 +45,9 @@
                     Background="Transparent"
                     BorderBrush="Transparent"
                     HorizontalAlignment="Right"
+                    Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
                 >
-                    <materialDesign:PackIcon Kind="Close" HorizontalAlignment="Center" Height="30" Width="30">
-                    </materialDesign:PackIcon>
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <ContentPresenter Content="{TemplateBinding Content}" />
-                        </ControlTemplate>
-                    </Button.Template>
+                    <materialDesign:PackIcon Kind="Close" HorizontalAlignment="Center" Height="30" Width="30" />
                 </Button>
             </DockPanel>
         </Border>
