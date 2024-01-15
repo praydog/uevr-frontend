@@ -173,6 +173,7 @@ namespace UEVR {
         private ExecutableFilter m_executableFilter = new ExecutableFilter();
         private string? m_commandLineAttachExe = null;
         private string? m_commandLineLaunchExe = null;
+        private string? m_commandLineLaunchArgs = null;
         private int m_commandLineDelayInjection = 0;
         private bool m_ignoreFutureVDWarnings = false;
 
@@ -193,6 +194,10 @@ namespace UEVR {
                 }
                 if (arg.StartsWith("--launch=")) {
                     m_commandLineLaunchExe = arg.Substring(arg.IndexOf('=') + 1); // game exe URI may contain any characters including '='
+                    continue;
+                }
+                if (arg.StartsWith("--launch_args=")) {
+                    m_commandLineLaunchArgs = arg.Substring(arg.IndexOf('=') + 1); // space separated list of game exe arguments
                     continue;
                 }
                 if (arg.StartsWith("--delay=")) {
@@ -284,7 +289,8 @@ namespace UEVR {
                 try {
                     Process.Start(new ProcessStartInfo {
                         FileName = m_commandLineLaunchExe,
-                        UseShellExecute = true // for launcher compatiblity, executable might be an URI
+                        UseShellExecute = true, // for launcher compatiblity, executable might be an URI
+                        Arguments = m_commandLineLaunchArgs
                     });
 
                     m_launchExeDone = true;
