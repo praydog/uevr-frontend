@@ -685,13 +685,13 @@ namespace UEVR {
         }
 
         private void MainWindow_Update() {
-            Update_InjectorConnectionStatus();
-            Update_InjectStatus();
-
             if (m_virtualDesktopChecked == false) {
                 m_virtualDesktopChecked = true;
                 Check_VirtualDesktop();
             }
+
+            Update_InjectorConnectionStatus();
+            Update_InjectStatus();
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
