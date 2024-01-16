@@ -178,6 +178,7 @@ namespace UEVR {
         private string? m_commandLineLaunchArgs = null;
         private int m_commandLineDelayInjection = 0;
         private bool m_ignoreFutureVDWarnings = false;
+        private bool m_gameAutostartExplanationShown = false;
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         public static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
@@ -238,6 +239,8 @@ namespace UEVR {
             m_nullifyVRPluginsCheckbox.IsChecked = m_mainWindowSettings.NullifyVRPluginsCheckbox;
             m_ignoreFutureVDWarnings = m_mainWindowSettings.IgnoreFutureVDWarnings;
             m_focusGameOnInjectionCheckbox.IsChecked = m_mainWindowSettings.FocusGameOnInjection;
+            m_gameAutoStartCheckbox.IsChecked = m_mainWindowSettings.GameAutoStart;
+            m_gameAutostartExplanationShown = m_mainWindowSettings.GameAutoStartExplanationShown;
 
             m_updateTimer.Tick += (sender, e) => Dispatcher.Invoke(MainWindow_Update);
             m_updateTimer.Start();
@@ -293,6 +296,25 @@ namespace UEVR {
             TimeSpan oneSecond = TimeSpan.FromSeconds(1);
 
             if (m_commandLineLaunchExe != null && !m_launchExeDone) {
+                if(m_gameAutostartExplanationShown == false) {
+                    var dialog = new GameAutoStartExplanationDialog();
+                    dialog.ShowDialog();
+
+                    m_gameAutostartExplanationShown = dialog.HideAutostartWarning;
+
+                    if(m_gameAutostartExplanationShown) {
+                        m_gameAutoStartCheckbox.IsChecked = dialog.DialogResultStartGame;
+                    }
+
+                    if(!dialog.DialogResultStartGame) {
+                        m_launchExeDone = true;
+                        return;
+                    }
+                } else if(m_gameAutoStartCheckbox.IsChecked == false) {
+                    m_launchExeDone = true;
+                    return;
+                }
+                
                 if(m_commandLineAttachExePath != null && m_commandLineAttachExe != null) {
                     if(!IsUnrealEngineGame(m_commandLineAttachExePath, m_commandLineAttachExe)) {
                         var result = MessageBox.Show(m_lastSelectedProcessName + " does not appear to be an Unreal Engine title.\n" +
@@ -678,6 +700,8 @@ namespace UEVR {
             m_mainWindowSettings.NullifyVRPluginsCheckbox = m_nullifyVRPluginsCheckbox.IsChecked == true;
             m_mainWindowSettings.IgnoreFutureVDWarnings = m_ignoreFutureVDWarnings;
             m_mainWindowSettings.FocusGameOnInjection = m_focusGameOnInjectionCheckbox.IsChecked == true;
+            m_mainWindowSettings.GameAutoStart = m_gameAutoStartCheckbox.IsChecked == true;
+            m_mainWindowSettings.GameAutoStartExplanationShown = m_gameAutostartExplanationShown;
 
             m_mainWindowSettings.Save();
         }
