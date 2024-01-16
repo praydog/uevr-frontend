@@ -31,6 +31,7 @@ using System.ComponentModel;
 using static UEVR.SharedMemory;
 using System.Threading.Channels;
 using System.Security.Principal;
+using Path = System.IO.Path;
 
 namespace UEVR {
     class GameSettingEntry : INotifyPropertyChanged {
@@ -172,6 +173,7 @@ namespace UEVR {
 
         private ExecutableFilter m_executableFilter = new ExecutableFilter();
         private string? m_commandLineAttachExe = null;
+        private string? m_commandLineAttachExePath = null;
         private string? m_commandLineLaunchExe = null;
         private string? m_commandLineLaunchArgs = null;
         private int m_commandLineDelayInjection = 0;
@@ -190,6 +192,11 @@ namespace UEVR {
             foreach (string arg in args) {
                 if (arg.StartsWith("--attach=")) {
                     m_commandLineAttachExe = arg.Split('=')[1];
+
+                    if(m_commandLineAttachExe.EndsWith(".exe")) {
+                        m_commandLineAttachExePath = Path.GetDirectoryName(m_commandLineAttachExe);
+                        m_commandLineAttachExe = Path.GetFileNameWithoutExtension(m_commandLineAttachExe);
+                    }
                     continue;
                 }
                 if (arg.StartsWith("--launch=")) {
@@ -286,6 +293,39 @@ namespace UEVR {
             TimeSpan oneSecond = TimeSpan.FromSeconds(1);
 
             if (m_commandLineLaunchExe != null && !m_launchExeDone) {
+                if(m_commandLineAttachExePath != null && m_commandLineAttachExe != null) {
+                    if(!IsUnrealEngineGame(m_commandLineAttachExePath, m_commandLineAttachExe)) {
+                        var result = MessageBox.Show(m_lastSelectedProcessName + " does not appear to be an Unreal Engine title.\n" +
+                                                    "Do you want to proceed?",
+                                                    "Non UE game",
+                                                    MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                        switch (result) {
+                            case MessageBoxResult.Yes:
+                                break;
+                            case MessageBoxResult.No:
+                                Application.Current.Dispatcher.Invoke(new Action(() => { Application.Current.Shutdown(1); }));
+                                break;
+                        };
+                    }
+
+                    var pluginsDir = AreVRPluginsPresent(m_commandLineAttachExePath);
+                    if(pluginsDir != null) {
+                        var result = MessageBox.Show("VR plugins have been detected in game directory.\n" +
+                                                     "Do you want to automatically remove them?\n" +
+                                                     "NOTE: for a handful of games deleting VR plugins will lead to game crashes",
+                                                     "VR Plugins detected",
+                                                     MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                        switch (result) {
+                            case MessageBoxResult.Yes:
+                                RemoveVRPlugins(pluginsDir);
+                                break;
+                            case MessageBoxResult.No:
+                                break;
+                        };
+                    }
+                }
+                
                 try {
                     Process.Start(new ProcessStartInfo {
                         FileName = m_commandLineLaunchExe,
@@ -687,6 +727,22 @@ namespace UEVR {
             }
 
             return null;
+        }
+
+        private void RemoveVRPlugins(string? pluginsPath) {
+            if(pluginsPath == null) return;
+
+            foreach (string discouragedPlugin in m_discouragedPlugins) {
+                string pluginPath = pluginsPath + "\\" + discouragedPlugin;
+
+                if (Directory.Exists(pluginPath)) {
+                    try {
+                        Directory.Delete(pluginPath, true);
+                    } catch (Exception) {
+                        MessageBox.Show("Failed to delete:" + pluginPath);
+                    }
+                }
+            }
         }
 
         private bool IsUnrealEngineGame(string gameDirectory, string targetName) {
