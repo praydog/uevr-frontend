@@ -27,6 +27,8 @@
   "sublime_merge",
   "sublime_text",
   "xboxpcapp",
+  "xboxapp",
+  "winstore.app",
   "virtualdesktop.streamer",
   "steamvr_desktop_game_theater",
   "ds4windows",
@@ -36,5 +38,10 @@
   "winrar",
   "taskmgr",
   "vrserver",
-  "windowsterminal"
+  "windowsterminal",
+  "photoshop",
+  "adobe audition",
+  "adobe media encoder",
+  "illustrator",
+  "obs64"
 ]
