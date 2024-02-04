@@ -12,13 +12,9 @@ jobs:
           dotnet-version: 6.0.x
       - run: dotnet publish --configuration Release
 
-      - name: Compress release
-        run: |
-          7z a ${{github.workspace}}/ActionsRelease.zip ${{github.workspace}}/UEVR/bin/Release/net6.0-windows/win-x64/publish/*.*
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
           name: UEVR
-          path: ${{github.workspace}}/ActionsRelease.zip
+          path: ${{github.workspace}}/UEVR/bin/Release/net6.0-windows/win-x64/publish/*.*
           if-no-files-found: error
