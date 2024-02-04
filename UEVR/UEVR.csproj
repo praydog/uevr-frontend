@@ -11,6 +11,7 @@
     <Product>$(AssemblyName)</Product>
     <Authors>praydog</Authors>
     <AssemblyName>UEVRInjector</AssemblyName>
+    <PublishSingleFile>true</PublishSingleFile>
     <PackageProjectUrl>https://github.com/praydog/uevr-frontend</PackageProjectUrl>
   </PropertyGroup>
 
