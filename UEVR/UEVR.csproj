@@ -11,6 +11,8 @@
     <Product>$(AssemblyName)</Product>
     <Authors>praydog</Authors>
     <AssemblyName>UEVRInjector</AssemblyName>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>false</SelfContained>
     <PackageProjectUrl>https://github.com/praydog/uevr-frontend</PackageProjectUrl>
   </PropertyGroup>
 
@@ -62,19 +64,19 @@
     </Compile>
   </ItemGroup>
 
-    <ItemGroup>
-      <None Update="bundled\openvr_api.dll">
-        <Link>openvr_api.dll</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="bundled\openxr_loader.dll">
-        <Link>openxr_loader.dll</Link>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
-      <None Update="Properties\Settings.settings">
-        <Generator>SettingsSingleFileGenerator</Generator>
-        <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-      </None>
-    </ItemGroup>
+  <ItemGroup>
+    <None Update="bundled\openvr_api.dll">
+      <Link>openvr_api.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="bundled\openxr_loader.dll">
+      <Link>openxr_loader.dll</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
 
 </Project>
