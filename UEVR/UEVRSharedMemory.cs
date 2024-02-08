@@ -15,7 +15,7 @@ namespace UEVR {
         [DllImport("user32.dll", SetLastError = true)]
         public static extern bool PostThreadMessage(uint threadId, uint msg, IntPtr wParam, IntPtr lParam);
 
-        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+        [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode, Pack = 1)]
         public struct Data {
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 260)]
             public string path;
