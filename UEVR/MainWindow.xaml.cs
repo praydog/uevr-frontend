@@ -177,6 +177,8 @@ namespace UEVR {
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         public static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
 
+        private string excludedProcessesFile = "excluded.txt";
+
         public MainWindow() {
             InitializeComponent();
 
@@ -1068,6 +1070,7 @@ namespace UEVR {
         private static extern bool IsWow64Process([In] IntPtr hProcess, [Out] out bool wow64Process);
 
         private bool IsInjectableProcess(Process process) {
+        
             try {
                 if (Environment.Is64BitOperatingSystem) {
                     try {
@@ -1102,6 +1105,21 @@ namespace UEVR {
                     if (moduleLow == "d3d11.dll" || moduleLow == "d3d12.dll") {
                         return true ;
                     }
+                }
+
+                // Check if the excluded processes file exists
+                if (File.Exists(excludedProcessesFile)) {
+                    
+                    List<string> excludedProcesses = new List<string>();
+    
+                    // Read excluded process names from the text file
+                    excludedProcesses = File.ReadAllLines(excludedProcessesFile).ToList();
+    
+                    // Check if the process name is in the excluded list
+                    if (excludedProcesses.Contains(process.ProcessName)) {
+                        return false;
+                    }
+                    
                 }
 
                 return false;
