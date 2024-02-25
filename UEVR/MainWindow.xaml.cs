@@ -31,6 +31,7 @@ using System.ComponentModel;
 using static UEVR.SharedMemory;
 using System.Threading.Channels;
 using System.Security.Principal;
+using Path = System.IO.Path;
 
 namespace UEVR {
     class GameSettingEntry : INotifyPropertyChanged {
@@ -172,7 +173,12 @@ namespace UEVR {
 
         private ExecutableFilter m_executableFilter = new ExecutableFilter();
         private string? m_commandLineAttachExe = null;
+        private string? m_commandLineAttachExePath = null;
+        private string? m_commandLineLaunchExe = null;
+        private string? m_commandLineLaunchArgs = null;
+        private int m_commandLineDelayInjection = 0;
         private bool m_ignoreFutureVDWarnings = false;
+        private bool m_gameAutostartExplanationShown = false;
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]
         public static extern void SwitchToThisWindow(IntPtr hWnd, bool fAltTab);
@@ -189,6 +195,30 @@ namespace UEVR {
             foreach (string arg in args) {
                 if (arg.StartsWith("--attach=")) {
                     m_commandLineAttachExe = arg.Split('=')[1];
+
+                    if(m_commandLineAttachExe.EndsWith(".exe")) {
+                        m_commandLineAttachExePath = Path.GetDirectoryName(m_commandLineAttachExe);
+                        m_commandLineAttachExe = Path.GetFileNameWithoutExtension(m_commandLineAttachExe);
+                    }
+                    continue;
+                }
+                if (arg.StartsWith("--launch=")) {
+                    m_commandLineLaunchExe = arg.Substring(arg.IndexOf('=') + 1); // game exe URI may contain any characters including '='
+                    continue;
+                }
+                if (arg.StartsWith("--launch_args=")) {
+                    m_commandLineLaunchArgs = arg.Substring(arg.IndexOf('=') + 1); // space separated list of game exe arguments
+                    continue;
+                }
+                if (arg.StartsWith("--delay=")) {
+                    try {
+                        m_commandLineDelayInjection = int.Parse(arg.Split('=')[1]);
+                    }
+                    catch {
+                        m_commandLineDelayInjection = 0;
+                    }
+
+                    continue;
                 }
             }
         }
@@ -211,6 +241,8 @@ namespace UEVR {
             m_nullifyVRPluginsCheckbox.IsChecked = m_mainWindowSettings.NullifyVRPluginsCheckbox;
             m_ignoreFutureVDWarnings = m_mainWindowSettings.IgnoreFutureVDWarnings;
             m_focusGameOnInjectionCheckbox.IsChecked = m_mainWindowSettings.FocusGameOnInjection;
+            m_gameAutoStartCheckbox.IsChecked = m_mainWindowSettings.GameAutoStart;
+            m_gameAutostartExplanationShown = m_mainWindowSettings.GameAutoStartExplanationShown;
 
             m_updateTimer.Tick += (sender, e) => Dispatcher.Invoke(MainWindow_Update);
             m_updateTimer.Start();
@@ -253,6 +285,8 @@ namespace UEVR {
         }
 
         private DateTime m_lastAutoInjectTime = DateTime.MinValue;
+        private bool m_launchExeDone = false;
+        private int? m_delayInjectionTimer = null;
 
         private void Update_InjectStatus() {
             if (m_connected) {
@@ -262,6 +296,74 @@ namespace UEVR {
 
             DateTime now = DateTime.Now;
             TimeSpan oneSecond = TimeSpan.FromSeconds(1);
+
+            if (m_commandLineLaunchExe != null && !m_launchExeDone) {
+                if(m_gameAutostartExplanationShown == false) {
+                    var dialog = new GameAutoStartExplanationDialog();
+                    dialog.ShowDialog();
+
+                    m_gameAutostartExplanationShown = dialog.HideAutostartWarning;
+
+                    if(m_gameAutostartExplanationShown) {
+                        m_gameAutoStartCheckbox.IsChecked = dialog.DialogResultStartGame;
+                    }
+
+                    if(!dialog.DialogResultStartGame) {
+                        m_launchExeDone = true;
+                        return;
+                    }
+                } else if(m_gameAutoStartCheckbox.IsChecked == false) {
+                    m_launchExeDone = true;
+                    return;
+                }
+                
+                if(m_commandLineAttachExePath != null && m_commandLineAttachExe != null) {
+                    if(!IsUnrealEngineGame(m_commandLineAttachExePath, m_commandLineAttachExe)) {
+                        var result = MessageBox.Show(m_lastSelectedProcessName + " does not appear to be an Unreal Engine title.\n" +
+                                                    "Do you want to proceed?",
+                                                    "Non UE game",
+                                                    MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                        switch (result) {
+                            case MessageBoxResult.Yes:
+                                break;
+                            case MessageBoxResult.No:
+                                Application.Current.Dispatcher.Invoke(new Action(() => { Application.Current.Shutdown(1); }));
+                                break;
+                        };
+                    }
+
+                    var pluginsDir = AreVRPluginsPresent(m_commandLineAttachExePath);
+                    if(pluginsDir != null) {
+                        var result = MessageBox.Show("VR plugins have been detected in game directory.\n" +
+                                                     "Do you want to automatically disable them?\n" +
+                                                     "NOTE: for a handful of games disabling VR plugins will lead to game crashes",
+                                                     "VR Plugins detected",
+                                                     MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+                        switch (result) {
+                            case MessageBoxResult.Yes:
+                                RenameVRPlugins(pluginsDir);
+                                break;
+                            case MessageBoxResult.No:
+                                break;
+                        };
+                    }
+                }
+                
+                try {
+                    Process.Start(new ProcessStartInfo {
+                        FileName = m_commandLineLaunchExe,
+                        UseShellExecute = true, // for launcher compatiblity, executable might be an URI
+                        Arguments = m_commandLineLaunchArgs
+                    });
+
+                    m_launchExeDone = true;
+                }
+                catch (Exception) {
+                    MessageBox.Show("Failed to launch: " + m_commandLineLaunchExe, "Launch error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Application.Current.Dispatcher.Invoke(new Action(() => { Application.Current.Shutdown(1); }));
+                }
+            }
 
             if (m_commandLineAttachExe == null) {
                 if (m_lastSelectedProcessId == 0) {
@@ -315,6 +417,16 @@ namespace UEVR {
                     return;
                 }
 
+                if (m_commandLineDelayInjection > 0) {
+                    if (m_delayInjectionTimer == null) {
+                        m_delayInjectionTimer = m_commandLineDelayInjection;
+                    }
+
+                    m_injectButton.Content = m_commandLineAttachExe.ToLower() + " found. Delaying " + m_delayInjectionTimer + "s";
+                    m_delayInjectionTimer--;
+                    if (m_delayInjectionTimer > 0) return;
+                }
+
                 if (now - m_lastAutoInjectTime > oneSecond) {
                     if (m_nullifyVRPluginsCheckbox.IsChecked == true) {
                         IntPtr nullifierBase;
@@ -357,6 +469,8 @@ namespace UEVR {
 
                     m_lastAutoInjectTime = now;
                     m_commandLineAttachExe = null; // no need anymore.
+                    m_delayInjectionTimer = null;
+                    m_commandLineDelayInjection = 0;
                     FillProcessList();
                     if (m_focusGameOnInjectionCheckbox.IsChecked == true)
                     {
@@ -587,13 +701,13 @@ namespace UEVR {
         }
 
         private void MainWindow_Update() {
-            Update_InjectorConnectionStatus();
-            Update_InjectStatus();
-
             if (m_virtualDesktopChecked == false) {
                 m_virtualDesktopChecked = true;
                 Check_VirtualDesktop();
             }
+
+            Update_InjectorConnectionStatus();
+            Update_InjectStatus();
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
@@ -602,6 +716,8 @@ namespace UEVR {
             m_mainWindowSettings.NullifyVRPluginsCheckbox = m_nullifyVRPluginsCheckbox.IsChecked == true;
             m_mainWindowSettings.IgnoreFutureVDWarnings = m_ignoreFutureVDWarnings;
             m_mainWindowSettings.FocusGameOnInjection = m_focusGameOnInjectionCheckbox.IsChecked == true;
+            m_mainWindowSettings.GameAutoStart = m_gameAutoStartCheckbox.IsChecked == true;
+            m_mainWindowSettings.GameAutoStartExplanationShown = m_gameAutostartExplanationShown;
 
             m_mainWindowSettings.Save();
         }
@@ -651,6 +767,22 @@ namespace UEVR {
             }
 
             return null;
+        }
+
+        private void RenameVRPlugins(string? pluginsPath) {
+            if(pluginsPath == null) return;
+
+            foreach (string discouragedPlugin in m_discouragedPlugins) {
+                string pluginPath = pluginsPath + "\\" + discouragedPlugin;
+
+                if (Directory.Exists(pluginPath)) {
+                    try {
+                        Directory.Move(pluginPath, pluginPath + "_bak");
+                    } catch (Exception) {
+                        MessageBox.Show("Failed to rename:" + pluginPath);
+                    }
+                }
+            }
         }
 
         private bool IsUnrealEngineGame(string gameDirectory, string targetName) {

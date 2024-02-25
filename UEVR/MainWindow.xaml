@@ -157,6 +157,10 @@
                                     <ToggleButton x:Name="m_focusGameOnInjectionCheckbox" HorizontalAlignment="Left" IsChecked="True"/>
                                     <TextBlock TextWrapping="Wrap" Text="Focus game on injection"/>
                                 </StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <ToggleButton x:Name="m_gameAutoStartCheckbox" HorizontalAlignment="Left" IsChecked="True"/>
+                                    <TextBlock TextWrapping="Wrap" Text="Autostart game"/>
+                                </StackPanel>
                             </StackPanel>
                             <TextBlock x:Name="m_connectionStatus" TextWrapping="Wrap" Text="Unknown status"/>
                         </StackPanel>
