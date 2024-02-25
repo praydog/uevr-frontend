@@ -531,21 +531,35 @@ namespace UEVR {
                     Directory.CreateDirectory(gameGlobalDir);
                 }
 
-                var finalGameName = GameConfig.ExtractZipToDirectory(importPath, gameGlobalDir, gameName);
+                bool wantsExtract = true;
 
-                if (finalGameName == null) {
-                    MessageBox.Show("Failed to extract the ZIP file.");
-                    return;
+                if (GameConfig.ZipContainsDLL(importPath)) {
+                    string message = "The selected config file includes a DLL (plugin), which may execute actions on your system.\n" +
+                                     "Only import configs with DLLs from trusted sources to avoid potential risks.\n" +
+                                     "Do you still want to proceed with the import?";
+                    var dialog = new YesNoDialog("DLL Warning", message);
+                    dialog.ShowDialog();
+
+                    wantsExtract = dialog.DialogResultYes;
                 }
 
-                var finalDirectory = System.IO.Path.Combine(globalDir, finalGameName);
-                NavigateToDirectory(finalDirectory);
+                if (wantsExtract) {
+                    var finalGameName = GameConfig.ExtractZipToDirectory(importPath, gameGlobalDir, gameName);
 
-                RefreshCurrentConfig();
+                    if (finalGameName == null) {
+                        MessageBox.Show("Failed to extract the ZIP file.");
+                        return;
+                    }
+
+                    var finalDirectory = System.IO.Path.Combine(globalDir, finalGameName);
+                    NavigateToDirectory(finalDirectory);
+
+                    RefreshCurrentConfig();
 
 
-                if (m_connected) {
-                    SharedMemory.SendCommand(SharedMemory.Command.ReloadConfig);
+                    if (m_connected) {
+                        SharedMemory.SendCommand(SharedMemory.Command.ReloadConfig);
+                    }
                 }
             } catch (Exception ex) {
                 MessageBox.Show("An error occurred: " + ex.Message);

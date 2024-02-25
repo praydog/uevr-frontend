@@ -62,6 +62,23 @@ namespace UEVR {
             return fullPath.Substring(basePath.Length);
         }
 
+        public static bool ZipContainsDLL(string sourceArchiveFileName) {
+            try {
+                using (ZipArchive archive = ZipFile.OpenRead(sourceArchiveFileName)) {
+                    foreach (ZipArchiveEntry entry in archive.Entries) {
+                        if (entry.FullName.ToLower().EndsWith(".dll", StringComparison.OrdinalIgnoreCase)) {
+                            return true;
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+            }
+
+            // No .DLL files found
+            return false;
+        }
+
         public static string? ExtractZipToDirectory(string sourceArchiveFileName, string destinationDirectoryName, string gameName) {
             try {
                 string tempExtractionPath = Path.Combine(destinationDirectoryName, "temp_extraction");

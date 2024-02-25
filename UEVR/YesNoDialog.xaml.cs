@@ -7,22 +7,22 @@ using System.Windows;
 using System.Windows.Input;
 
 namespace UEVR {
-    public partial class VDWarnDialog : Window {
-        public bool HideFutureWarnings { get; private set; }
-        public bool DialogResultOK { get; private set; }
+    public partial class YesNoDialog : Window {
+        public bool DialogResultYes { get; private set; } = false;
 
-        public VDWarnDialog() {
+        public YesNoDialog(string windowTitle, string txt) {
             InitializeComponent();
+            m_dialogText.Text = txt;
+            this.Title = windowTitle;
         }
 
-        private void btnOK_Click(object sender, RoutedEventArgs e) {
-            HideFutureWarnings = chkHideWarning.IsChecked ?? false;
-            DialogResultOK = true;
+        private void btnYes_Click(object sender, RoutedEventArgs e) {
+            DialogResultYes = true;
             this.Close();
         }
 
-        private void btnCancel_Click(object sender, RoutedEventArgs e) {
-            DialogResultOK = false;
+        private void btnNo_Click(object sender, RoutedEventArgs e) {
+            DialogResultYes = false;
             this.Close();
         }
 
