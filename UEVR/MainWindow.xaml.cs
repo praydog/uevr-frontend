@@ -527,9 +527,12 @@ namespace UEVR {
             var gameGlobalDir = globalDir + "\\" + gameName;
 
             try {
+                if(Directory.Exists(gameGlobalDir)) {
+                    Directory.Delete(gameGlobalDir, true);
+                }
                 if (!Directory.Exists(gameGlobalDir)) {
                     Directory.CreateDirectory(gameGlobalDir);
-                }
+                } 
 
                 bool wantsExtract = true;
 
