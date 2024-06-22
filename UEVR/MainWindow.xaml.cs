@@ -31,6 +31,7 @@ using System.ComponentModel;
 using static UEVR.SharedMemory;
 using System.Threading.Channels;
 using System.Security.Principal;
+using System.Windows.Media.Animation;
 
 namespace UEVR {
     class GameSettingEntry : INotifyPropertyChanged {
@@ -979,7 +980,19 @@ namespace UEVR {
 
                     if (pid != null) {
                         var target = Process.GetProcessById((int)pid);
-                        target.CloseMainWindow();
+
+                        if (target == null || target.HasExited) {
+                            return;
+                        }
+
+                        target.WaitForInputIdle(100);
+
+                        SharedMemory.SendCommand(SharedMemory.Command.Quit);
+
+                        if (target.WaitForExit(2000)) {
+                            return;
+                        }
+
                         target.Kill();
                     }
                 } catch(Exception) {

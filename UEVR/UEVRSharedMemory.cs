@@ -35,7 +35,8 @@ namespace UEVR {
 
         public enum Command {
             ReloadConfig,
-            ConfigSetupAcknowledged
+            ConfigSetupAcknowledged,
+            Quit
         };
 
         public static string SharedMemoryName = "UnrealVRMod";
