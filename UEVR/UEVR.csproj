@@ -23,8 +23,8 @@
   <ItemGroup>
     <None Remove="discord.png" />
     <None Remove="donate.png" />
-    <None Remove="FilteredExecutables.json" />
     <None Remove="github.png" />
+    <None Remove="PlainTextFilteredExecutables.json" />
     <None Remove="UEVR.png" />
     <None Remove="UEVR2.png" />
   </ItemGroup>
@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="FilteredExecutables.json" />
+    <EmbeddedResource Include="PlainTextFilteredExecutables.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,7 +42,6 @@
     <PackageReference Include="MaterialDesignThemes" Version="4.8.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Ini" Version="7.0.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -51,10 +50,6 @@
     <Resource Include="github.png" />
     <Resource Include="UEVR2.png" />
   </ItemGroup>
-
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="python hash_executables.py" />
-  </Target>
 
   <ItemGroup>
     <Compile Update="Properties\Settings.Designer.cs">
